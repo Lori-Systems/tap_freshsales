@@ -1,0 +1,133 @@
+{
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "address": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "city": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "state": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "zipcode": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "country": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "industry_type_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "business_type_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "number_of_employees": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "annual_revenue": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "website": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "phone": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "owner_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "facebook": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "twitter": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "linkedin": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "territory_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "parent_sales_account_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

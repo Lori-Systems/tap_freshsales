@@ -1,0 +1,121 @@
+{
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "amount": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "sales_account_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "deal_stage_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "deal_reason_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "deal_type_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "owner_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "expected_close": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "closed_date": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "lead_source_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "campaign_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "deal_product_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "deal_payment_status_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "probability": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "territory_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "deal_pipeline_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

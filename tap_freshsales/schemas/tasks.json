@@ -1,0 +1,86 @@
+{
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "title": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "description": {
+            "type": [
+                "null",
+                "text"
+            ]
+        },
+        "due_date": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "targetable_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "targetable_type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "owner_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "creater_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "outcome_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "task_type_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}
