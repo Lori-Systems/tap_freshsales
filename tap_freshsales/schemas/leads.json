@@ -13,7 +13,7 @@
               "string"
           ]
       },
-      "last_name*": {
+      "last_name": {
           "type": [
               "null",
               "string"
@@ -163,7 +163,7 @@
               "integer"
           ]
       },
-      "company[name]\u2020": {
+      "company[name]": {
           "type": [
               "null",
               "string"
