@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
 import os
 import json
+import sys
+import time
+import backoff
+import requests
+from requests.exceptions import HTTPError
 import singer
 from singer import utils, metadata
 
+
 REQUIRED_CONFIG_KEYS = ["api_key", "domain", "start_date"]
+PER_PAGE = 100
+BASE_URL = "https://{}.freshsales.io"
+CONFIG = {}
+STATE = {}
 LOGGER = singer.get_logger()
+SESSION = requests.Session()
 
 endpoints = {
     "leads": "/api/leads/view/",
