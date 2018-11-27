@@ -9,6 +9,8 @@ from requests.exceptions import HTTPError
 import singer
 from singer import utils, metadata
 
+from tap_freshsales import utils as tap_utils
+
 
 REQUIRED_CONFIG_KEYS = ["api_key", "domain", "start_date"]
 PER_PAGE = 100
@@ -30,6 +32,9 @@ endpoints = {
 
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
+
+def get_url(endpoint, **kwargs):
+    return BASE_URL.format(CONFIG['domain']) + endpoints[endpoint].format(**kwargs)
 
 # Load schemas from schemas folder
 def load_schemas():
@@ -80,6 +85,12 @@ def get_selected_streams(catalog):
 
     return selected_streams
 
+def sync_accounts():
+    '''
+    Sync Sales Accounts Data, Standard schema is kept as columns,
+    Custom fields are saved as JSON content
+    '''
+
 def sync(config, state, catalog):
 
     selected_stream_ids = get_selected_streams(catalog)
@@ -89,7 +100,7 @@ def sync(config, state, catalog):
         stream_id = stream.tap_stream_id
         stream_schema = stream.schema
         if stream_id in selected_stream_ids:
-            # TODO: sync code for stream goes here...
+            
             LOGGER.info('Syncing stream:' + stream_id)
     return
 
