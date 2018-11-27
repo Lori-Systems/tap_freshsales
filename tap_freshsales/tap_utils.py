@@ -16,6 +16,8 @@ def strptime(dt):
 def strftime(dt):
     return dt.strftime(DATETIME_FMT)
 
+def get_abs_path(path):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 def ratelimit(limit, every):
     def limitdecorator(fn):
@@ -46,6 +48,9 @@ def chunk(l, n):
 def load_json(path):
     with open(path) as f:
         return json.load(f)
+
+def load_schema(entity):
+    return load_json(get_abs_path("schemas/{}.json".format(entity)))
 
 
 def update_state(state, entity, dt):
