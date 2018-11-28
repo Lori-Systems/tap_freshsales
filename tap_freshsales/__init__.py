@@ -21,13 +21,13 @@ LOGGER = singer.get_logger()
 SESSION = requests.Session()
 
 endpoints = {
-    "leads": "/api/leads/view/",
-    "contacts": "/api/contacts/view/",
+    "leads": "/api/leads/{query}",
+    "contacts": "/api/contacts/{query}",
     "accounts": "/api/sales_accounts/{query}",
-    "deals": "/api/deals/view/",
-    "tasks": "/api/tasks?filter=",
-    "appointments": "/api/appointments?filter=",
-    "sales": "/api/sales_activities/"
+    "deals": "/api/deals/{query}",
+    #"tasks": "/api/tasks?filter=",
+    #"appointments": "/api/appointments?filter=",
+    "sales": "/api/sales_activities/{query}"
 }
 
 @tap_utils.ratelimit(1, 2)
@@ -62,13 +62,15 @@ def gen_request(url, params=None):
     params = params or {}
     params["per_page"] = PER_PAGE
     page = 1
+    # Meta tag carries number of pages
     while True:
         params['page'] = page
         data = request(url, params).json()
-        if(len(data)==1):
+        if(type(data)==type({})):
             yield data
-        for row in data:
-            yield row
+        else:
+            for row in data:
+                yield row
 
         if len(data) == PER_PAGE:
             page += 1
@@ -124,6 +126,13 @@ def get_selected_streams(catalog):
 
     return selected_streams
 
+# Use Freshsales API structure to derive filters for an
+# endpoint in the supported streams
+def get_filters(endpoint):
+    url = get_url(endpoint,query='filters')
+    filters = list(gen_request(url))[0]['filters']
+    return filters
+
 # Sync accounts
 def sync_accounts():
     '''
@@ -131,37 +140,54 @@ def sync_accounts():
     Custom fields are saved as JSON content
     '''
     bookmark_property = 'updated_at'
-    singer.write_schema("accounts",
-                        tap_utils.load_schema("accounts"),
+    endpoint = 'accounts'
+    singer.write_schema(endpoint,
+                        tap_utils.load_schema(endpoint),
                         ["id"],
-                        bookmark_properties=[bookmark_property])
-    sync_accounts_by_filter(bookmark_property)
+                        bookmark_properties=[bookmark_property])  
+    filters = get_filters(endpoint)
+    for fil in filters:
+        sync_accounts_by_filter(bookmark_property,fil)
 
 # Batch sync accounts while bookmarking updated at
-def sync_accounts_by_filter(bookmark_prop):
+def sync_accounts_by_filter(bookmark_prop,fil):
     endpoint = 'accounts'
-    url = get_url(endpoint,query='filters')
-    print(url)
-    filters = list(gen_request(url))[0]['filters']
-    for fil in filters:
-        fil_id = fil['id']
-        accounts = list(gen_request(get_url(endpoint,query='view/'+str(fil_id))))
-        for acc in accounts:
-            print(acc)
+    fil_id = fil['id']
+    accounts = list(gen_request(get_url(endpoint,query='view/'+str(fil_id))))
+    print(accounts)
+    for acc in accounts:
+        LOGGER.info(acc['meta'])
 
 # Batch sync deals and stages of deals
 def sync_deals():
     '''
     Sync deals for every view
     '''
-    return
+    bookmark_property = 'updated_at'
+    endpoint = 'deals'
+    singer.write_schema(endpoint,
+                        tap_utils.load_schema("deals"),
+                        ["id"],
+                        bookmark_properties=[bookmark_property])
+    filters = get_filters("deals")
+    for fil in filters:
+        sync_deals_by_filter(bookmark_property,fil)
+
+# Batch sync deals with bookmarking on update time
+def sync_deals_by_filter(bookmark_prop,fil):
+    endpoint = 'deals'
+    fil_id = fil['id']
+    deals = list(gen_request(get_url(endpoint,query='view/'+str(fil_id))))
+    print(deals)
+    for deal in deals:
+        LOGGER.info(deal['meta'])
 
 def sync(config, state, catalog):
     LOGGER.info("Starting FreshSales sync")
 
     try:
-        sync_accounts()
         sync_deals()
+        sync_accounts()
     except HTTPError as e:
         LOGGER.critical(
             "Error making request to FreshSales API: GET %s: [%s - %s]",
@@ -180,7 +206,7 @@ def main():
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
         catalog = discover()
-        print(json.dumps(catalog, indent=2))
+        LOGGER.info(json.dumps(catalog, indent=2))
     # Otherwise run in sync mode
     else:
         if args.catalog:
