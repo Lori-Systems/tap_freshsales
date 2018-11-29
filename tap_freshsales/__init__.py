@@ -25,9 +25,9 @@ endpoints = {
     "contacts": "/api/contacts/{query}",
     "accounts": "/api/sales_accounts/{query}",
     "deals": "/api/deals/{query}",
-    #"tasks": "/api/tasks?filter=",
-    #"appointments": "/api/appointments?filter=",
-    "sales": "/api/sales_activities/{query}"
+    "tasks": "/api/tasks?filter=",
+    "appointments": "/api/appointments?filter=",
+    "sales_activities": "/api/sales_activities/"
 }
 
 @tap_utils.ratelimit(1, 2)
@@ -62,11 +62,14 @@ def gen_request(url, params=None):
     params = params or {}
     params["per_page"] = PER_PAGE
     page = 1
-    # Meta tag carries number of pages
+    # TODO: Meta tag carries number of pages
+    # Use generator to scan across all pages of output
     while True:
         params['page'] = page
         data = request(url, params).json()
         if(type(data)==type({})):
+            # TODO: Most API endpoint results the first key is data
+            LOGGER.info(data.keys())
             yield data
         else:
             for row in data:
@@ -133,6 +136,7 @@ def get_filters(endpoint):
     filters = list(gen_request(url))[0]['filters']
     return filters
 
+# TODO: This is very WET code , clean it up with streams mechanism
 # Sync accounts
 def sync_accounts():
     '''
@@ -153,8 +157,7 @@ def sync_accounts():
 def sync_accounts_by_filter(bookmark_prop,fil):
     endpoint = 'accounts'
     fil_id = fil['id']
-    accounts = list(gen_request(get_url(endpoint,query='view/'+str(fil_id))))
-    print(accounts)
+    accounts = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for acc in accounts:
         LOGGER.info(acc['meta'])
 
@@ -166,10 +169,10 @@ def sync_deals():
     bookmark_property = 'updated_at'
     endpoint = 'deals'
     singer.write_schema(endpoint,
-                        tap_utils.load_schema("deals"),
+                        tap_utils.load_schema(endpoint),
                         ["id"],
                         bookmark_properties=[bookmark_property])
-    filters = get_filters("deals")
+    filters = get_filters(endpoint)
     for fil in filters:
         sync_deals_by_filter(bookmark_property,fil)
 
@@ -177,15 +180,59 @@ def sync_deals():
 def sync_deals_by_filter(bookmark_prop,fil):
     endpoint = 'deals'
     fil_id = fil['id']
-    deals = list(gen_request(get_url(endpoint,query='view/'+str(fil_id))))
-    print(deals)
+    deals = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for deal in deals:
         LOGGER.info(deal['meta'])
+
+# Sync leads across all filters
+def sync_leads():
+    bookmark_property = 'updated_at'
+    endpoint = 'leads'
+    singer.write_schema(endpoint,
+                        tap_utils.load_schema(endpoint),
+                        ["id"],
+                        bookmark_properties=[bookmark_property])
+    filters = get_filters(endpoint)
+    for fil in filters:
+        sync_leads_by_filter(bookmark_property,fil)
+
+# Fetch leads for a particular filter for sync
+def sync_leads_by_filter(bookmark_property,fil):
+    endpoint = 'leads'
+    fil_id = fil['id']
+    leads = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
+    for lead in leads:
+        LOGGER.info(lead['meta'])
+
+# Fetch tasks stream
+def sync_tasks():
+    endpoint = 'tasks'
+
+# Fetch tasks by all applicable filters
+def sync_tasks_by_filter(bookmark_property,fil):
+    endpoint = 'tasks'
+
+
+# Fetch sales_activities stream
+def sync_sales_activities():
+    bookmark_property = 'updated_at'
+    endpoint = 'sales_activities'
+    singer.write_schema(endpoint,
+                        tap_utils.load_schema(endpoint),
+                        ["id"],
+                        bookmark_properties=[bookmark_property])
+    sales = gen_request(get_url(endpoint))
+    for sale in sales:
+        LOGGER.info(sale['meta'])
+
+    
 
 def sync(config, state, catalog):
     LOGGER.info("Starting FreshSales sync")
 
     try:
+        sync_sales_activities()
+        sync_leads()
         sync_deals()
         sync_accounts()
     except HTTPError as e:
