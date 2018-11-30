@@ -67,18 +67,21 @@ def gen_request(url, params=None):
     while True:
         params['page'] = page
         data = request(url, params).json()
+        data_list = []
         if(type(data)==type({})):
             # TODO: Most API endpoint results the first key is data
-            LOGGER.info(data.keys())
-            yield data
-        else:
-            for row in data:
-                yield row
-
-        if len(data) == PER_PAGE:
-            page += 1
-        else:
-            break
+            first_key = list(data.keys())[0]
+            if first_key == 'filters':
+                yield data
+            else:
+                data_list = data[first_key]
+                for row in data_list:
+                    yield row
+            LOGGER.info([page,len(data_list),PER_PAGE])
+            if len(data_list) == PER_PAGE:
+                page += 1
+            else:
+                break
 
 # Load schemas from schemas folder
 def load_schemas():
@@ -159,7 +162,7 @@ def sync_accounts_by_filter(bookmark_prop,fil):
     fil_id = fil['id']
     accounts = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for acc in accounts:
-        LOGGER.info(acc['meta'])
+        LOGGER.info(acc)
 
 # Batch sync deals and stages of deals
 def sync_deals():
@@ -182,7 +185,7 @@ def sync_deals_by_filter(bookmark_prop,fil):
     fil_id = fil['id']
     deals = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for deal in deals:
-        LOGGER.info(deal['meta'])
+        LOGGER.info(deal)
 
 # Sync leads across all filters
 def sync_leads():
@@ -202,7 +205,7 @@ def sync_leads_by_filter(bookmark_property,fil):
     fil_id = fil['id']
     leads = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for lead in leads:
-        LOGGER.info(lead['meta'])
+        LOGGER.info(lead)
 
 # Fetch tasks stream
 def sync_tasks():
@@ -223,7 +226,7 @@ def sync_sales_activities():
                         bookmark_properties=[bookmark_property])
     sales = gen_request(get_url(endpoint))
     for sale in sales:
-        LOGGER.info(sale['meta'])
+        LOGGER.info(sale)
 
     
 
