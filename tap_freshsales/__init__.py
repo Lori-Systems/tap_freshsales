@@ -163,6 +163,7 @@ def sync_accounts_by_filter(bookmark_prop,fil):
     accounts = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for acc in accounts:
         LOGGER.info("Account {}: Syncing details".format(acc['id']))
+        acc['custom_field'] = json.dumps(acc['custom_field'])
         singer.write_record("accounts", acc, time_extracted=singer.utils.now())
     #TODO: Change state and use bookmark to capture updated time
 

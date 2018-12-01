@@ -130,12 +130,7 @@
             ]
         },
         "custom_field": {
-            "type": ["null","object"],
-            "properties" : { 
-                "cf_commodity" : { "type" : "boolean" },
-                "cf_container" : { "type" : "boolean" } 
-            } 
-            
+            "type": ["null","string"]            
         }
     }
 }
