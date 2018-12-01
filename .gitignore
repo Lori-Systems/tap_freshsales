@@ -103,3 +103,5 @@ singer-check-tap-data
 state.json
 catalog.json
 .vscode/settings.json
+config_csv.json
+config_postgres.json

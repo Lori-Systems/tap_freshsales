@@ -147,10 +147,11 @@ def sync_accounts():
     '''
     bookmark_property = 'updated_at'
     endpoint = 'accounts'
+    schema = tap_utils.load_schema(endpoint)
     singer.write_schema(endpoint,
-                        tap_utils.load_schema(endpoint),
+                        schema,
                         ["id"],
-                        bookmark_properties=[bookmark_property])  
+                        bookmark_properties=[bookmark_property])
     filters = get_filters(endpoint)
     for fil in filters:
         sync_accounts_by_filter(bookmark_property,fil)
@@ -161,7 +162,9 @@ def sync_accounts_by_filter(bookmark_prop,fil):
     fil_id = fil['id']
     accounts = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for acc in accounts:
-        LOGGER.info(acc)
+        LOGGER.info("Account {}: Syncing details".format(acc['id']))
+        singer.write_record("accounts", acc, time_extracted=singer.utils.now())
+    #TODO: Change state and use bookmark to capture updated time
 
 # Batch sync deals and stages of deals
 def sync_deals():
@@ -185,8 +188,10 @@ def sync_deals_by_filter(bookmark_prop,fil):
     deals = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for deal in deals:
         # get all sub-entities and save them
+        deal['amount'] = float(deal['amount']) #cast amount to float
         LOGGER.info("Deal {}: Syncing details".format(deal['id']))
         singer.write_record("deals", deal, time_extracted=singer.utils.now())
+    #TODO: Update and use stage/bookmark property
 
 
 # Sync leads across all filters
@@ -207,7 +212,9 @@ def sync_leads_by_filter(bookmark_property,fil):
     fil_id = fil['id']
     leads = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for lead in leads:
-        LOGGER.info(lead)
+        LOGGER.info("Lead {}: Syncing details".format(lead['id']))
+        singer.write_record("leads", lead, time_extracted=singer.utils.now())
+    #TODO: Update and use stage/bookmark property
         
 
 # Fetch tasks stream
@@ -229,7 +236,9 @@ def sync_sales_activities():
                         bookmark_properties=[bookmark_property])
     sales = gen_request(get_url(endpoint))
     for sale in sales:
-        LOGGER.info(sale)
+        LOGGER.info("Sale {}: Syncing details".format(sale['id']))
+        singer.write_record("sale_activities", sale, time_extracted=singer.utils.now())
+    #TODO: Update and use stage/bookmark property
 
     
 
@@ -237,10 +246,10 @@ def sync(config, state, catalog):
     LOGGER.info("Starting FreshSales sync")
 
     try:
-        # sync_sales_activities()
-        # sync_leads()
+        sync_sales_activities()
+        sync_leads()
         sync_deals()
-        # sync_accounts()
+        sync_accounts()
     except HTTPError as e:
         LOGGER.critical(
             "Error making request to FreshSales API: GET %s: [%s - %s]",
