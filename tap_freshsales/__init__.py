@@ -77,7 +77,6 @@ def gen_request(url, params=None):
                 data_list = data[first_key]
                 for row in data_list:
                     yield row
-            LOGGER.info([page,len(data_list),PER_PAGE])
             if len(data_list) == PER_PAGE:
                 page += 1
             else:
@@ -185,7 +184,10 @@ def sync_deals_by_filter(bookmark_prop,fil):
     fil_id = fil['id']
     deals = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for deal in deals:
-        LOGGER.info(deal)
+        # get all sub-entities and save them
+        LOGGER.info("Deal {}: Syncing details".format(deal['id']))
+        singer.write_record("deals", deal, time_extracted=singer.utils.now())
+
 
 # Sync leads across all filters
 def sync_leads():
@@ -206,6 +208,7 @@ def sync_leads_by_filter(bookmark_property,fil):
     leads = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
     for lead in leads:
         LOGGER.info(lead)
+        
 
 # Fetch tasks stream
 def sync_tasks():
@@ -234,10 +237,10 @@ def sync(config, state, catalog):
     LOGGER.info("Starting FreshSales sync")
 
     try:
-        sync_sales_activities()
-        sync_leads()
+        # sync_sales_activities()
+        # sync_leads()
         sync_deals()
-        sync_accounts()
+        # sync_accounts()
     except HTTPError as e:
         LOGGER.critical(
             "Error making request to FreshSales API: GET %s: [%s - %s]",
