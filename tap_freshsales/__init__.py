@@ -25,7 +25,7 @@ endpoints = {
     "contacts": "/api/contacts/{query}",
     "accounts": "/api/sales_accounts/{query}",
     "deals": "/api/deals/{query}",
-    "tasks": "/api/tasks?filter=",
+    "tasks": "/api/tasks?filter={filter}&include={include}",
     "appointments": "/api/appointments?filter=",
     "sales_activities": "/api/sales_activities/"
 }
@@ -247,10 +247,24 @@ def sync_leads_by_filter(bookmark_property,fil):
 # Fetch tasks stream
 def sync_tasks():
     endpoint = 'tasks'
+    bookmark_property = 'updated_at'
+    singer.write_schema(endpoint,
+                        tap_utils.load_schema(endpoint),
+                        ["id"],
+                        bookmark_properties=[bookmark_property])
+    # Hardcoded task filters
+    filters = ['open','due today','due tomorrow','overdue','completed']
+    for fil in filters:
+        sync_tasks_by_filter(bookmark_property,fil)
 
 # Fetch tasks by all applicable filters
 def sync_tasks_by_filter(bookmark_property,fil):
     endpoint = 'tasks'
+    tasks = gen_request(get_url(endpoint,filter=fil,include='owner,users,targetable'))
+    for task in tasks:
+        LOGGER.info("Task {}: Syncing details".format(task['id']))
+        singer.write_record(endpoint, task, time_extracted=singer.utils.now())
+    #TODO: Update and use stage/bookmark property
 
 
 # Fetch sales_activities stream
@@ -278,6 +292,7 @@ def sync(config, state, catalog):
         sync_leads()
         sync_deals()
         sync_accounts()
+        sync_tasks()
     except HTTPError as e:
         LOGGER.critical(
             "Error making request to FreshSales API: GET %s: [%s - %s]",
