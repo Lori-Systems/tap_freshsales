@@ -167,6 +167,32 @@ def sync_accounts_by_filter(bookmark_prop,fil):
         singer.write_record("accounts", acc, time_extracted=singer.utils.now())
     #TODO: Change state and use bookmark to capture updated time
 
+def sync_contacts():
+    '''
+    Sync Sales Accounts Data, Standard schema is kept as columns,
+    Custom fields are saved as JSON content
+    '''
+    bookmark_property = 'updated_at'
+    endpoint = 'contacts'
+    schema = tap_utils.load_schema(endpoint)
+    singer.write_schema(endpoint,
+                        schema,
+                        ["id"],
+                        bookmark_properties=[bookmark_property])
+    filters = get_filters(endpoint)
+    for fil in filters:
+        sync_contacts_by_filter(bookmark_property,fil)
+
+# Batch sync contacts while bookmarking updated at
+def sync_contacts_by_filter(bookmark_prop,fil):
+    endpoint = 'contacts'
+    fil_id = fil['id']
+    contacts = gen_request(get_url(endpoint,query='view/'+str(fil_id)))
+    for con in contacts:
+        LOGGER.info("Contact {}: Syncing details".format(con['id']))
+        singer.write_record(endpoint, con, time_extracted=singer.utils.now())
+    #TODO: Change state and use bookmark to capture updated time
+
 # Batch sync deals and stages of deals
 def sync_deals():
     '''
@@ -247,6 +273,7 @@ def sync(config, state, catalog):
     LOGGER.info("Starting FreshSales sync")
 
     try:
+        sync_contacts()
         sync_sales_activities()
         sync_leads()
         sync_deals()
