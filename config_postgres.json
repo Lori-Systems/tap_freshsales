@@ -1,8 +1,0 @@
-{
-    "host": "localhost",
-    "user": "postgres",
-    "port": "5432",
-    "password": "postgres",
-    "dbname": "freshsales_etl",
-    "schema": "public"
-  }
