@@ -16,7 +16,7 @@ This tap:
   - [Appointments](https://www.freshsales.io/api/#appointments)
   - [Sales](https://www.freshsales.io/api/#sales-activities)
 - Outputs the schema for each resource
-- Incrementally pulls data based on the input state
+- Pulls all data
 
 ---
 
