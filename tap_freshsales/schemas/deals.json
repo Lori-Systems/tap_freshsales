@@ -116,6 +116,9 @@
                 "null",
                 "integer"
             ]
+        },
+        "custom_field": {
+            "type": ["null","string"]            
         }
     }
 }

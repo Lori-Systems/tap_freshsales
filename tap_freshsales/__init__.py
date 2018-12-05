@@ -26,7 +26,7 @@ endpoints = {
     "accounts": "/api/sales_accounts/{query}",
     "deals": "/api/deals/{query}",
     "tasks": "/api/tasks?filter={filter}&include={include}",
-    "appointments": "/api/appointments?filter=",
+    "appointments": "/api/appointments?filter={filter}&include={include}",
     "sales_activities": "/api/sales_activities/"
 }
 
@@ -216,6 +216,7 @@ def sync_deals_by_filter(bookmark_prop,fil):
     for deal in deals:
         # get all sub-entities and save them
         deal['amount'] = float(deal['amount']) #cast amount to float
+        deal['custom_field'] = json.dumps(deal['custom_field']) #Make JSON String to store
         LOGGER.info("Deal {}: Syncing details".format(deal['id']))
         singer.write_record("deals", deal, time_extracted=singer.utils.now())
     #TODO: Update and use stage/bookmark property
@@ -281,16 +282,39 @@ def sync_sales_activities():
         singer.write_record("sale_activities", sale, time_extracted=singer.utils.now())
     #TODO: Update and use stage/bookmark property
 
+# Fetch all team appointments
+def sync_appointments():
+    bookmark_property = 'updated_at'
+    endpoint = 'appointments'
+    filters = ['past','upcoming']
+    singer.write_schema(endpoint,
+                        tap_utils.load_schema(endpoint),
+                        ["id"],
+                        bookmark_properties=[bookmark_property])
+    for fil in filters:
+        sync_appointments_by_filter(bookmark_property,fil)
+
+# Fetch team appointments by filter
+def sync_appointments_by_filter(bookmark_property,fil):
+    endpoint = 'appointments'
+    appts = gen_request(get_url(endpoint,filter=fil,include='creater,targetable,appointment_attendees'))
+    for appoint in appts:
+        LOGGER.info("Appointment {}: Syncing details".format(appoint['id']))
+        singer.write_record(endpoint, appoint, time_extracted=singer.utils.now())
+    #TODO: Update and use stage/bookmark property
+
+
     
 
 def sync(config, state, catalog):
     LOGGER.info("Starting FreshSales sync")
-
+    # Synchronize x7 data-streams
     try:
+        sync_appointments()
+        sync_deals()
         sync_contacts()
         sync_sales_activities()
         sync_leads()
-        sync_deals()
         sync_accounts()
         sync_tasks()
     except HTTPError as e:

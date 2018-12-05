@@ -4,14 +4,14 @@ from setuptools import setup
 setup(
     name="tap_freshsales",
     version="0.1.0",
-    description="Singer.io tap for extracting data",
-    author="Stitch",
+    description="Singer.io tap for extracting FreshSales Data",
+    author="Tisham Dhar (Lori)",
     url="http://singer.io",
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["tap_freshsales"],
     install_requires=[
-        "singer-python>=5.0.12",
-        "requests",
+        "singer-python==5.1.1",
+        "requests==2.13.0",
     ],
     entry_points="""
     [console_scripts]
