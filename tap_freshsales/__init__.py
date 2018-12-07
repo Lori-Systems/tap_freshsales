@@ -141,24 +141,36 @@ def get_selected_streams(catalog):
 
     return selected_streams
 
-# Use Freshsales API structure to derive filters for an
-# endpoint in the supported streams
-
 
 def get_filters(endpoint):
+    """
+    Use Freshsales API structure to derive filters for an
+    endpoint in the supported streams
+    """
     url = get_url(endpoint, query='filters')
     filters = list(gen_request(url))[0]['filters']
     return filters
+
+
+def get_start(entity):
+    """
+    Get bookmarked start time for specific entity
+    (defined as combination of endpoint and filter)
+    data before this start time is ignored
+    """
+    if entity not in STATE:
+        STATE[entity] = CONFIG['start_date']
+    return STATE[entity]
 
 # TODO: This is very WET code , clean it up with streams mechanism
 # Sync accounts
 
 
 def sync_accounts():
-    '''
+    """
     Sync Sales Accounts Data, Standard schema is kept as columns,
     Custom fields are saved as JSON content
-    '''
+    """
     bookmark_property = 'updated_at'
     endpoint = 'accounts'
     schema = tap_utils.load_schema(endpoint)
@@ -174,6 +186,10 @@ def sync_accounts():
 
 
 def sync_accounts_by_filter(bookmark_prop, fil):
+    """
+    Sync accounts by view based filters, use bookmark property
+    to manage state and fetch data updated since particular time
+    """
     endpoint = 'accounts'
     fil_id = fil['id']
     accounts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
@@ -185,10 +201,10 @@ def sync_accounts_by_filter(bookmark_prop, fil):
 
 
 def sync_contacts():
-    '''
+    """
     Sync Sales Accounts Data, Standard schema is kept as columns,
     Custom fields are saved as JSON content
-    '''
+    """
     bookmark_property = 'updated_at'
     endpoint = 'contacts'
     schema = tap_utils.load_schema(endpoint)
@@ -204,13 +220,20 @@ def sync_contacts():
 
 
 def sync_contacts_by_filter(bookmark_prop, fil):
+    """
+    Sync all contacts updated after bookmark time
+    """
     endpoint = 'contacts'
     fil_id = fil['id']
+    state_entity = endpoint + "_" + str(fil_id)
+    start = get_start(state_entity)
     contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for con in contacts:
-        LOGGER.info("Contact {}: Syncing details".format(con['id']))
-        singer.write_record(endpoint, con, time_extracted=singer.utils.now())
-    # TODO: Change state and use bookmark to capture updated time
+        if con[bookmark_prop] >= start:
+            LOGGER.info("Contact {}: Syncing details".format(con['id']))
+            tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
+            singer.write_record(endpoint, con, time_extracted=singer.utils.now())
+            singer.write_state(STATE)
 
 # Batch sync deals and stages of deals
 
@@ -342,11 +365,12 @@ def sync_appointments_by_filter(bookmark_property, fil):
 
 def sync(config, state, catalog):
     LOGGER.info("Starting FreshSales sync")
+    STATE.update(state)
     # Synchronize x7 data-streams
     try:
+        sync_contacts()
         sync_appointments()
         sync_deals()
-        sync_contacts()
         sync_sales_activities()
         sync_leads()
         sync_accounts()
