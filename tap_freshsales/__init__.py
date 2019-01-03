@@ -104,13 +104,42 @@ def load_schemas():
 
 
 def discover():
+    """
+    Allow discovery of all streams and metadata
+    """
     raw_schemas = load_schemas()
     streams = []
 
     for schema_name, schema in raw_schemas.items():
 
-        # TODO: populate any metadata and stream's key properties here..
-        stream_metadata = []
+        # Default metadata templated on 
+        # https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md
+        default_meta = {
+          "metadata": {
+            "inclusion": "available",
+            "table-key-properties": ["id"],
+            "selected-by-default": True,
+            "valid-replication-keys": ["updated_at"],
+            "schema-name": schema_name,
+          },
+          "breadcrumb": []
+        }
+        # Each stream uses id as the primary key
+        id_meta = {
+          "metadata": {
+            "inclusion": "automatic",
+          },
+          "breadcrumb": ["properties", "id"]
+        }
+        # Each stream has updated_at times
+        bookmark_meta = {
+          "metadata": {
+            "inclusion": "automatic",
+          },
+          "breadcrumb": ["properties", "updated_at"]
+        }
+
+        stream_metadata = [default_meta,id_meta,bookmark_meta]
         stream_key_properties = []
 
         # create and add catalog entry
@@ -118,8 +147,8 @@ def discover():
             'stream': schema_name,
             'tap_stream_id': schema_name,
             'schema': schema,
-            'metadata': [],
-            'key_properties': []
+            'metadata': stream_metadata,
+            'key_properties': stream_key_properties
         }
         streams.append(catalog_entry)
 
