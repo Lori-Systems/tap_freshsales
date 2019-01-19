@@ -79,6 +79,8 @@ def gen_request(url, params=None):
             first_key = list(data.keys())[0]
             if first_key == 'filters':
                 yield data
+            elif first_key == 'meta':
+                break
             else:
                 data_list = data[first_key]
                 for row in data_list:
