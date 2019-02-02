@@ -1,6 +1,8 @@
 import pytest
 from tap_freshsales import discover
 
+#TODO: Use responses to inject pseudo-freshsales API responses
+
 def test_sync_contacts_by_filter():
     """
     Test sync of contacts, inject data via responses
