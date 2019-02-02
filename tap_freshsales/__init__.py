@@ -223,12 +223,14 @@ def sync_accounts_by_filter(bookmark_prop, fil):
     """
     endpoint = 'accounts'
     fil_id = fil['id']
+    state_entity = endpoint + "_" + str(fil_id)
+    start = get_start(state_entity)
     accounts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for acc in accounts:
-        LOGGER.info("Account {}: Syncing details".format(acc['id']))
-        acc['custom_field'] = json.dumps(acc['custom_field'])
-        singer.write_record("accounts", acc, time_extracted=singer.utils.now())
-    # TODO: Change state and use bookmark to capture updated time
+        if acc[bookmark_prop] >= start:
+            LOGGER.info("Account {}: Syncing details".format(acc['id']))
+            acc['custom_field'] = json.dumps(acc['custom_field'])
+            singer.write_record("accounts", acc, time_extracted=singer.utils.now())
 
 
 def sync_contacts():
@@ -289,16 +291,17 @@ def sync_deals():
 def sync_deals_by_filter(bookmark_prop, fil):
     endpoint = 'deals'
     fil_id = fil['id']
+    state_entity = endpoint + "_" + str(fil_id)
+    start = get_start(state_entity)
     deals = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for deal in deals:
-        # get all sub-entities and save them
-        deal['amount'] = float(deal['amount'])  # cast amount to float
-        deal['custom_field'] = json.dumps(
-            deal['custom_field'])  # Make JSON String to store
-        LOGGER.info("Deal {}: Syncing details".format(deal['id']))
-        singer.write_record("deals", deal, time_extracted=singer.utils.now())
-    # TODO: Update and use stage/bookmark property
-
+        if deal[bookmark_prop] >= start:
+            # get all sub-entities and save them
+            deal['amount'] = float(deal['amount'])  # cast amount to float
+            deal['custom_field'] = json.dumps(
+                deal['custom_field'])  # Make JSON String to store
+            LOGGER.info("Deal {}: Syncing details".format(deal['id']))
+            singer.write_record("deals", deal, time_extracted=singer.utils.now())
 
 # Sync leads across all filters
 def sync_leads():
@@ -315,15 +318,16 @@ def sync_leads():
 # Fetch leads for a particular filter for sync
 
 
-def sync_leads_by_filter(bookmark_property, fil):
+def sync_leads_by_filter(bookmark_prop, fil):
     endpoint = 'leads'
     fil_id = fil['id']
+    state_entity = endpoint + "_" + str(fil_id)
+    start = get_start(state_entity)
     leads = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for lead in leads:
-        LOGGER.info("Lead {}: Syncing details".format(lead['id']))
-        singer.write_record("leads", lead, time_extracted=singer.utils.now())
-    # TODO: Update and use stage/bookmark property
-
+        if lead[bookmark_prop] >= start:
+            LOGGER.info("Lead {}: Syncing details".format(lead['id']))
+            singer.write_record("leads", lead, time_extracted=singer.utils.now())
 
 # Fetch tasks stream
 def sync_tasks():
@@ -341,37 +345,41 @@ def sync_tasks():
 # Fetch tasks by all applicable filters
 
 
-def sync_tasks_by_filter(bookmark_property, fil):
+def sync_tasks_by_filter(bookmark_prop, fil):
     endpoint = 'tasks'
+    state_entity = endpoint + "_" + str(fil)
+    # TODO: Verify updated-at exists for tasks
+    #start = get_start(state_entity)
     tasks = gen_request(get_url(endpoint, filter=fil,
                                 include='owner,users,targetable'))
     for task in tasks:
         LOGGER.info("Task {}: Syncing details".format(task['id']))
         singer.write_record(endpoint, task, time_extracted=singer.utils.now())
-    # TODO: Update and use stage/bookmark property
 
 
 # Fetch sales_activities stream
 def sync_sales_activities():
     bookmark_property = 'updated_at'
     endpoint = 'sales_activities'
+    state_entity = endpoint
+    start = get_start(state_entity)
     singer.write_schema(endpoint,
                         tap_utils.load_schema(endpoint),
                         ["id"],
                         bookmark_properties=[bookmark_property])
     sales = gen_request(get_url(endpoint))
     for sale in sales:
-        LOGGER.info("Sale {}: Syncing details".format(sale['id']))
-        singer.write_record("sale_activities", sale,
-                            time_extracted=singer.utils.now())
-    # TODO: Update and use stage/bookmark property
+        if sale[bookmark_property] >= start:
+            LOGGER.info("Sale {}: Syncing details".format(sale['id']))
+            singer.write_record("sale_activities", sale,
+                                time_extracted=singer.utils.now())
 
 # Fetch all team appointments
 
 
 def sync_appointments():
-    bookmark_property = 'updated_at'
     endpoint = 'appointments'
+    bookmark_property = 'updated_at'
     filters = ['past', 'upcoming']
     singer.write_schema(endpoint,
                         tap_utils.load_schema(endpoint),
@@ -385,13 +393,14 @@ def sync_appointments():
 
 def sync_appointments_by_filter(bookmark_property, fil):
     endpoint = 'appointments'
+    # TODO: Verify updated_at exists for appointments
+    #start = get_start(endpoint)
     appts = gen_request(get_url(endpoint, filter=fil,
                                 include='creater,targetable,appointment_attendees'))
     for appoint in appts:
         LOGGER.info("Appointment {}: Syncing details".format(appoint['id']))
         singer.write_record(endpoint, appoint,
                             time_extracted=singer.utils.now())
-    # TODO: Update and use stage/bookmark property
 
 
 def sync(config, state, catalog):
