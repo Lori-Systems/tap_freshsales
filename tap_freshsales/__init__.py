@@ -120,7 +120,7 @@ def discover():
           "metadata": {
             "inclusion": "available",
             "table-key-properties": ["id"],
-            "selected-by-default": True,
+            "selected": True,
             "valid-replication-keys": ["updated_at"],
             "schema-name": schema_name,
           },
@@ -164,11 +164,12 @@ def get_selected_streams(catalog):
     and mdata with a 'selected' entry
     '''
     selected_streams = []
-    for stream in catalog.streams:
-        stream_metadata = metadata.to_map(stream.metadata)
+    # TODO: Resolve why cookie-cutter uses arribute dict notation
+    for stream in catalog['streams']:
+        stream_metadata = metadata.to_map(stream['metadata'])
         # stream metadata will have an empty breadcrumb
         if metadata.get(stream_metadata, (), "selected"):
-            selected_streams.append(stream.tap_stream_id)
+            selected_streams.append(stream['tap_stream_id'])
 
     return selected_streams
 
@@ -407,14 +408,25 @@ def sync(config, state, catalog):
     LOGGER.info("Starting FreshSales sync")
     STATE.update(state)
     # Synchronize x7 data-streams
+    # TODO: Use selected streams only
+    # Use map based function compresenion to link fetch
+    # function and stream name
+    selected_streams = get_selected_streams(catalog)
     try:
-        sync_contacts()
-        sync_appointments()
-        sync_deals()
-        sync_sales_activities()
-        sync_leads()
-        sync_accounts()
-        sync_tasks()
+        if 'contacts' in selected_streams:
+            sync_contacts()
+        if 'appointments' in selected_streams:
+            sync_appointments()
+        if 'deals' in selected_streams:
+            sync_deals()
+        if 'sales_activities' in selected_streams:
+            sync_sales_activities()
+        if 'leads' in selected_streams:
+            sync_leads()
+        if 'accounts' in selected_streams:
+            sync_accounts()
+        if 'tasks' in selected_streams:
+            sync_tasks()
     except HTTPError as e:
         LOGGER.critical(
             "Error making request to FreshSales API: GET %s: [%s - %s]",
