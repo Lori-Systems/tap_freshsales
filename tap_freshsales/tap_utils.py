@@ -9,23 +9,42 @@ DATETIME_FMT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 def strptime(dt):
+    """
+    Parse FreshSales time format
+    """
     return datetime.datetime.strptime(dt, DATETIME_FMT)
 
 
 def strftime(dt):
+    """
+    Output FreshSales time format
+    """
     return dt.strftime(DATETIME_FMT)
 
 
 def get_abs_path(path):
+    """
+    Create path to json schemas
+    """
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 
 def ratelimit(limit, every):
+    """
+    Function to limit API calls velocity
+    """
     def limitdecorator(fn):
+        """
+        Rate limit decorator
+        """
         times = collections.deque()
 
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
+            """
+            Decorator implementation to wrap
+            source function and add delays
+            """
             if len(times) >= limit:
                 t0 = times.pop()
                 t = time.time()

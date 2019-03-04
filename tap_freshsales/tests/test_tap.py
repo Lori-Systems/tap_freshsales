@@ -1,7 +1,10 @@
+"""Tap test suite uses responses to inject pseudo-freshsales API responses
+and check output from stdout via singer.io API calls
+"""
+
 import pytest
 from tap_freshsales import discover
 
-#TODO: Use responses to inject pseudo-freshsales API responses
 
 def test_sync_contacts_by_filter():
     """
@@ -9,11 +12,13 @@ def test_sync_contacts_by_filter():
     """
     pass
 
+
 def test_sync_deals_by_filter():
     """
     Test sync of deals, inject data via responses
     """
     pass
+
 
 def test_sync_tasks_by_filter():
     """
@@ -21,11 +26,13 @@ def test_sync_tasks_by_filter():
     """
     pass
 
+
 def test_sync_accounts_by_filter():
     """
     Test sync of accounts, inject data via responses
     """
     pass
+
 
 def test_tap_discover():
     """
@@ -34,4 +41,4 @@ def test_tap_discover():
     stream_def = discover()
     assert stream_def
     # Ensure some metadata exists
-    assert len(stream_def['streams'][0]['metadata']) > 0
+    assert stream_def['streams'][0]['metadata']

@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""FreshSales Tap main entry point
+
+Returns:
+    [str] -- [FreshSales Tap]
+"""
+
 import os
 import json
 import sys
@@ -33,6 +39,10 @@ endpoints = {
 
 @tap_utils.ratelimit(1, 2)
 def request(url, params=None):
+    """
+    Rate limited API requests to fetch data from
+    FreshSales API
+    """
     params = params or {}
     headers = {}
     if 'user_agent' in CONFIG:
@@ -59,12 +69,18 @@ def request(url, params=None):
 
 
 def get_url(endpoint, **kwargs):
+    """
+    Create approprate freshsales URL to create API call to relevant stream
+    """
     return BASE_URL.format(CONFIG['domain']) + endpoints[endpoint].format(**kwargs)
 
 # Generate request for a given REST API URL
 
 
 def gen_request(url, params=None):
+    """
+    Generator to yields rows of data for given stream
+    """
     params = params or {}
     params["per_page"] = PER_PAGE
     page = 1
@@ -90,10 +106,11 @@ def gen_request(url, params=None):
             else:
                 break
 
-# Load schemas from schemas folder
-
 
 def load_schemas():
+    """
+    Load schemas from schemas folder and yield for all streams
+    """
     schemas = {}
 
     for filename in os.listdir(tap_utils.get_abs_path('schemas')):
@@ -114,34 +131,34 @@ def discover():
 
     for schema_name, schema in raw_schemas.items():
 
-        # Default metadata templated on 
+        # Default metadata templated on
         # https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md
         default_meta = {
-          "metadata": {
-            "inclusion": "available",
-            "table-key-properties": ["id"],
-            "selected": True,
-            "valid-replication-keys": ["updated_at"],
-            "schema-name": schema_name,
-          },
-          "breadcrumb": []
+            "metadata": {
+                "inclusion": "available",
+                "table-key-properties": ["id"],
+                "selected": True,
+                "valid-replication-keys": ["updated_at"],
+                "schema-name": schema_name,
+            },
+            "breadcrumb": []
         }
         # Each stream uses id as the primary key
         id_meta = {
-          "metadata": {
-            "inclusion": "automatic",
-          },
-          "breadcrumb": ["properties", "id"]
+            "metadata": {
+                "inclusion": "automatic",
+            },
+            "breadcrumb": ["properties", "id"]
         }
         # Each stream has updated_at times
         bookmark_meta = {
-          "metadata": {
-            "inclusion": "automatic",
-          },
-          "breadcrumb": ["properties", "updated_at"]
+            "metadata": {
+                "inclusion": "automatic",
+            },
+            "breadcrumb": ["properties", "updated_at"]
         }
 
-        stream_metadata = [default_meta,id_meta,bookmark_meta]
+        stream_metadata = [default_meta, id_meta, bookmark_meta]
         stream_key_properties = []
 
         # create and add catalog entry
@@ -158,11 +175,11 @@ def discover():
 
 
 def get_selected_streams(catalog):
-    '''
+    """
     Gets selected streams.  Checks schema's 'selected' first (legacy)
     and then checks metadata (current), looking for an empty breadcrumb
     and mdata with a 'selected' entry
-    '''
+    """
     selected_streams = []
     # TODO: Resolve why cookie-cutter uses arribute dict notation
     for stream in catalog['streams']:
@@ -231,7 +248,8 @@ def sync_accounts_by_filter(bookmark_prop, fil):
         if acc[bookmark_prop] >= start:
             LOGGER.info("Account {}: Syncing details".format(acc['id']))
             acc['custom_field'] = json.dumps(acc['custom_field'])
-            singer.write_record("accounts", acc, time_extracted=singer.utils.now())
+            singer.write_record(
+                "accounts", acc, time_extracted=singer.utils.now())
 
 
 def sync_contacts():
@@ -266,16 +284,17 @@ def sync_contacts_by_filter(bookmark_prop, fil):
         if con[bookmark_prop] >= start:
             LOGGER.info("Contact {}: Syncing details".format(con['id']))
             tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
-            singer.write_record(endpoint, con, time_extracted=singer.utils.now())
+            singer.write_record(
+                endpoint, con, time_extracted=singer.utils.now())
             singer.write_state(STATE)
 
 # Batch sync deals and stages of deals
 
 
 def sync_deals():
-    '''
+    """
     Sync deals for every view
-    '''
+    """
     bookmark_property = 'updated_at'
     endpoint = 'deals'
     singer.write_schema(endpoint,
@@ -290,6 +309,9 @@ def sync_deals():
 
 
 def sync_deals_by_filter(bookmark_prop, fil):
+    """
+    Iterate over all deal filter to sync all deal data
+    """
     endpoint = 'deals'
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
@@ -302,10 +324,16 @@ def sync_deals_by_filter(bookmark_prop, fil):
             deal['custom_field'] = json.dumps(
                 deal['custom_field'])  # Make JSON String to store
             LOGGER.info("Deal {}: Syncing details".format(deal['id']))
-            singer.write_record("deals", deal, time_extracted=singer.utils.now())
+            singer.write_record(
+                "deals", deal, time_extracted=singer.utils.now())
 
 # Sync leads across all filters
+
+
 def sync_leads():
+    """
+    Sync leads data and call out to per-filter sync
+    """
     bookmark_property = 'updated_at'
     endpoint = 'leads'
     singer.write_schema(endpoint,
@@ -320,6 +348,10 @@ def sync_leads():
 
 
 def sync_leads_by_filter(bookmark_prop, fil):
+    """
+    Iterate over all leads in a filter and consume generator
+    to yield schema rows
+    """
     endpoint = 'leads'
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
@@ -328,10 +360,16 @@ def sync_leads_by_filter(bookmark_prop, fil):
     for lead in leads:
         if lead[bookmark_prop] >= start:
             LOGGER.info("Lead {}: Syncing details".format(lead['id']))
-            singer.write_record("leads", lead, time_extracted=singer.utils.now())
+            singer.write_record(
+                "leads", lead, time_extracted=singer.utils.now())
 
 # Fetch tasks stream
+
+
 def sync_tasks():
+    """
+    Sync all task based on filters
+    """
     endpoint = 'tasks'
     bookmark_property = 'updated_at'
     singer.write_schema(endpoint,
@@ -347,6 +385,9 @@ def sync_tasks():
 
 
 def sync_tasks_by_filter(bookmark_prop, fil):
+    """
+    Sync tasks for a specific filter
+    """
     endpoint = 'tasks'
     state_entity = endpoint + "_" + str(fil)
     # TODO: Verify updated-at exists for tasks
@@ -360,6 +401,9 @@ def sync_tasks_by_filter(bookmark_prop, fil):
 
 # Fetch sales_activities stream
 def sync_sales_activities():
+    """Sync all sales activities, call out to individual filters
+    """
+
     bookmark_property = 'updated_at'
     endpoint = 'sales_activities'
     state_entity = endpoint
@@ -379,6 +423,9 @@ def sync_sales_activities():
 
 
 def sync_appointments():
+    """Sync all appointments
+    """
+
     endpoint = 'appointments'
     bookmark_property = 'updated_at'
     filters = ['past', 'upcoming']
@@ -393,6 +440,13 @@ def sync_appointments():
 
 
 def sync_appointments_by_filter(bookmark_property, fil):
+    """Iterate over all appointment filter to sync
+
+    Arguments:
+        bookmark_property {[str]} -- [Field used to bookmark stream]
+        fil {[str]} -- [Filter string which yields a subset of the stream]
+    """
+
     endpoint = 'appointments'
     # TODO: Verify updated_at exists for appointments
     #start = get_start(endpoint)
@@ -405,11 +459,19 @@ def sync_appointments_by_filter(bookmark_property, fil):
 
 
 def sync(config, state, catalog):
+    """Sync some/all data streams
+
+    Arguments:
+        config {[dict]} -- [Variables to access source stream e.g. API endpoint and access credentials]
+        state {[str]} -- [State of previous ETL loaded from file]
+        catalog {[str]} -- [All streams catalog string (JSON formatted)]
+    """
+
     LOGGER.info("Starting FreshSales sync")
     STATE.update(state)
     # Synchronize x7 data-streams
     # TODO: Use selected streams only
-    # Use map based function compresenion to link fetch
+    # TODO: Use map based function compresenion to link fetch
     # function and stream name
     selected_streams = get_selected_streams(catalog)
     try:
@@ -438,6 +500,8 @@ def sync(config, state, catalog):
 
 @utils.handle_top_exception(LOGGER)
 def main():
+    """Main function call
+    """
 
     # Parse command line arguments
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
