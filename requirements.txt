@@ -19,6 +19,7 @@ pytest==4.3.0
 python-dateutil==2.7.5
 pytz==2018.4
 requests==2.20.0
+responses==0.10.5
 simplejson==3.11.1
 singer-python==5.1.1
 singer-tools==0.4.1
