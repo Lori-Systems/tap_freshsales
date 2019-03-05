@@ -1,0 +1,48 @@
+{
+    "deals": [
+        {
+            "id": 5,
+            "name": "Test Opportunity",
+            "amount": "600.0",
+            "base_currency_amount": "600.0",
+            "expected_close": "2019-02-14",
+            "closed_date": null,
+            "stage_updated_time": "2019-02-12T04:01:59Z",
+            "custom_field": {
+            },
+            "probability": 100,
+            "updated_at": "2019-02-23T23:25:25Z",
+            "created_at": "2019-02-12T04:01:59Z",
+            "deal_pipeline_id": 5000011862,
+            "deal_stage_id": 5000083345,
+            "age": 20,
+            "links": {
+                "conversations": "/deals/5/conversations/all?include=email_conversation_recipients%2Ctargetable%2Cphone_number%2Cphone_caller%2Cnote%2Cuser\\u0026per_page=3",
+                "document_associations": "/deals/5/document_associations",
+                "notes": "/deals/5/notes?include=creater",
+                "tasks": "/deals/5/tasks?include=creater,owner,updater,targetable,users,task_type",
+                "appointments": "/deals/5/appointments?include=creater,owner,updater,targetable,appointment_attendees"
+            },
+            "recent_note": null,
+            "completed_sales_sequences": null,
+            "active_sales_sequences": null,
+            "web_form_id": null,
+            "upcoming_activities_time": null,
+            "collaboration": {
+                "id": "5",
+                "title": "Test Opportunity",
+                "convo_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJDb252b0lkIjoiNTAwMDQxMDQxNiIsIlVzZXJVVUlEIjoiZGM3NmVhYjQtYzRmOS01YTQzLWE4MTctYTkzODU5MzAwZGM0IiwiZXhwIjoxNTUxNzE4NDg1fQ.j_jtg83aN0gIRAF8ZTIWbs2mhxAaUkKf39ZX8g2T6xY"
+            },
+            "last_assigned_at": "2019-02-12T04:02:00Z",
+            "tags": [],
+            "last_contacted_sales_activity_mode": null,
+            "last_contacted_via_sales_activity": null,
+            "expected_deal_value": "600.0",
+            "rotten_days": null
+        }
+    ],
+    "meta": {
+        "total_pages": 1,
+        "total": 1
+    }
+}
