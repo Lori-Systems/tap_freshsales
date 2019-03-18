@@ -15,7 +15,7 @@ setup(
     ],
     entry_points="""
     [console_scripts]
-    tap_freshsales=tap_freshsales:main
+    tap-freshsales=tap_freshsales:main
     """,
     packages=["tap_freshsales"],
     package_data = {
