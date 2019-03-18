@@ -511,7 +511,7 @@ def main():
     if args.discover:
         catalog = discover()
         catalog_string = json.dumps(catalog, indent=2)
-        LOGGER.info(catalog_string)
+        #LOGGER.info(catalog_string)
         print(catalog_string)
     # Otherwise run in sync mode
     else:
