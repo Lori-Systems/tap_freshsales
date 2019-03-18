@@ -510,7 +510,9 @@ def main():
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
         catalog = discover()
-        LOGGER.info(json.dumps(catalog, indent=2))
+        catalog_string = json.dumps(catalog, indent=2)
+        LOGGER.info(catalog_string)
+        print(catalog_string)
     # Otherwise run in sync mode
     else:
         if args.catalog:
