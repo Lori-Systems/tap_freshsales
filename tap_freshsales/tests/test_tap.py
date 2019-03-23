@@ -92,4 +92,7 @@ def test_tap_discover():
     stream_def = discover()
     assert stream_def
     # Ensure some metadata exists
-    assert stream_def['streams'][0]['metadata']
+    for stream in stream_def['streams']:
+        assert stream['metadata']
+        print(stream['metadata'])
+        assert not ('selected' in stream['metadata'][0])
