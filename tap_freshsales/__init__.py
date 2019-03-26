@@ -135,9 +135,8 @@ def discover():
         # https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md
         default_meta = {
             "metadata": {
-                "inclusion": "available",
+                "inclusion": "automatic",
                 "table-key-properties": ["id"],
-                "selected": True,
                 "valid-replication-keys": ["updated_at"],
                 "schema-name": schema_name,
             },
@@ -511,7 +510,7 @@ def main():
     if args.discover:
         catalog = discover()
         catalog_string = json.dumps(catalog, indent=2)
-        LOGGER.info(catalog_string)
+        #LOGGER.info(catalog_string)
         print(catalog_string)
     # Otherwise run in sync mode
     else:
