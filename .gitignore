@@ -105,3 +105,5 @@ catalog.json
 .vscode/settings.json
 config_csv.json
 config_postgres.json
+
+.idea
