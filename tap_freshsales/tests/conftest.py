@@ -1,10 +1,9 @@
-
 import pytest
 import tap_freshsales
 import responses
 import os
 
-TEST_DOMAIN = 'testdomain'
+TEST_DOMAIN = "testdomain"
 TEST_DIR = os.path.dirname(__file__)
 
 
@@ -15,13 +14,10 @@ def default_session_fixture():
 
     import datetime
     import json
+
     tap_freshsales.CONFIG = {}
-    tap_freshsales.CONFIG['start_date'] = str(datetime.datetime.now())
-    tap_freshsales.CONFIG['domain'] = TEST_DOMAIN
+    tap_freshsales.CONFIG["start_date"] = str(datetime.datetime.now())
+    tap_freshsales.CONFIG["domain"] = TEST_DOMAIN
     pytest.TEST_DIR = TEST_DIR
     pytest.TEST_DOMAIN = TEST_DOMAIN
     # Globally activated responses from sample test data
-
-    
-
-    
