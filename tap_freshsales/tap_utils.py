@@ -33,6 +33,7 @@ def ratelimit(limit, every):
     """
     Function to limit API calls velocity
     """
+
     def limitdecorator(fn):
         """
         Rate limit decorator
@@ -62,7 +63,7 @@ def ratelimit(limit, every):
 
 def chunk(l, n):
     for i in range(0, len(l), n):
-        yield l[i:i + n]
+        yield l[i : i + n]
 
 
 def load_json(path):
@@ -91,5 +92,4 @@ def update_state(state, entity, dt):
 def check_config(config, required_keys):
     missing_keys = [key for key in required_keys if key not in config]
     if missing_keys:
-        raise Exception(
-            "Config is missing required keys: {}".format(missing_keys))
+        raise Exception("Config is missing required keys: {}".format(missing_keys))
