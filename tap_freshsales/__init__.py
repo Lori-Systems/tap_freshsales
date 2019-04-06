@@ -470,24 +470,19 @@ def sync(config, state, catalog):
     STATE.update(state)
     # Synchronize x7 data-streams
     # TODO: Use selected streams only
-    # TODO: Use map based function compresenion to link fetch
-    # function and stream name
+    stream_function_mapping = dict(
+        contacts=sync_contacts(),
+        appointments=sync_appointments(),
+        deals=sync_deals(),
+        sales_activities=sync_sales_activities(),
+        leads=sync_leads(),
+        accounts=sync_accounts(),
+        tasks=sync_tasks()
+    )
     selected_streams = get_selected_streams(catalog)
     try:
-        if 'contacts' in selected_streams:
-            sync_contacts()
-        if 'appointments' in selected_streams:
-            sync_appointments()
-        if 'deals' in selected_streams:
-            sync_deals()
-        if 'sales_activities' in selected_streams:
-            sync_sales_activities()
-        if 'leads' in selected_streams:
-            sync_leads()
-        if 'accounts' in selected_streams:
-            sync_accounts()
-        if 'tasks' in selected_streams:
-            sync_tasks()
+        for stream_name in selected_streams:
+            stream_function_mapping.get(stream_name, None)
     except HTTPError as e:
         LOGGER.critical(
             "Error making request to FreshSales API: GET %s: [%s - %s]",
