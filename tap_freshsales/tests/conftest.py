@@ -1,4 +1,5 @@
-
+import datetime
+import json
 import pytest
 import tap_freshsales
 import responses
@@ -12,9 +13,6 @@ TEST_DIR = os.path.dirname(__file__)
 def default_session_fixture():
     """Monkey patch globals in freshsales tap module
     """
-
-    import datetime
-    import json
     tap_freshsales.CONFIG = {}
     tap_freshsales.CONFIG['start_date'] = str(datetime.datetime.now())
     tap_freshsales.CONFIG['domain'] = TEST_DOMAIN

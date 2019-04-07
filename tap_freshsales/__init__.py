@@ -201,11 +201,9 @@ def get_filters(endpoint):
         'tasks': ['open', 'due today', 'due tomorrow', 'overdue', 'completed'],
         'appointments': ['past', 'upcoming']
     }
-
     if endpoint not in edge_case_filters.keys():
         url = get_url(endpoint, query='filters')
         filters = list(gen_request(url))[0]['filters']
-
     else:
         filters = edge_case_filters[endpoint]
     return filters
@@ -239,7 +237,7 @@ def sync_current_endpoint_data_stream(endpoint):
 
 def get_endpoint_resource(endpoint, fil):
     """
-
+    Generate endpoint resource based on the endpoint given.
     :param endpoint: current endpoint
     :param fil: current filter
     :return:
