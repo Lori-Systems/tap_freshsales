@@ -6,10 +6,7 @@ import json
 import os
 import responses
 import pytest
-from tap_freshsales import discover, sync_contacts_by_filter
-from tap_freshsales import sync_accounts_by_filter
-from tap_freshsales import sync_deals_by_filter
-from tap_freshsales import sync_tasks_by_filter
+from tap_freshsales import discover, sync_current_endpoint_by_filter
 from tap_freshsales import load_schemas, get_start
 
 
@@ -25,63 +22,24 @@ def test_load_schemas():
     assert load_schemas()
 
 
+TEST_CASES = (
+    ('contacts', 'https://{}.freshsales.io/api/contacts/view/1?per_page=100&page=1'),
+    ('deals', 'https://{}.freshsales.io/api/deals/view/1?per_page=100&page=1'),
+    ('tasks', 'https://{}.freshsales.io/api/tasks?filter=open&include=owner,users,targetable&per_page=100&page=1'),
+    ('sales_accounts', 'https://{}.freshsales.io/api/sales_accounts/view/1?per_page=100&page=1')
+)
+
+
+@pytest.mark.parametrize("endpoint,endpoint_url", TEST_CASES)
 @responses.activate
-def test_sync_contacts_by_filter():
+def test_sync_current_endpoint_by_filter(endpoint, endpoint_url):
     """
-    Test sync of contacts, inject data via responses
+    Test sync of various endpoints including contacts, deals, sales_accounts and tasks, inject data via responses
     """
-    contact_data = json.load(
-        open(os.path.join(pytest.TEST_DIR, 'mock_data/contacts.json')))
-    contact_url = 'https://{}.freshsales.io/api/contacts/view/1?per_page=100&page=1'.format(
-        pytest.TEST_DOMAIN)
-    responses.add(responses.GET, contact_url,
-                  json=contact_data, status=200, content_type='application/json')
-    assert sync_contacts_by_filter('updated_at', {'id': 1}) is None
-    assert len(responses.calls) == 1
-
-
-@responses.activate
-def test_sync_deals_by_filter():
-    """
-    Test sync of deals, inject data via responses
-    """
-    deal_data = json.load(
-        open(os.path.join(pytest.TEST_DIR, 'mock_data/deals.json')))
-    deal_url = 'https://{}.freshsales.io/api/deals/view/1?per_page=100&page=1'.format(
-        pytest.TEST_DOMAIN)
-    responses.add(responses.GET, deal_url,
-                  json=deal_data, status=200, content_type='application/json')
-    assert sync_deals_by_filter('updated_at', {'id': 1}) is None
-    assert len(responses.calls) == 1
-
-
-@responses.activate
-def test_sync_tasks_by_filter():
-    """
-    Test sync of tasks, inject data via responses
-    """
-    task_data = json.load(
-        open(os.path.join(pytest.TEST_DIR, 'mock_data/tasks.json')))
-    task_url = 'https://{}.freshsales.io/api/tasks?filter=open&include=owner,users,targetable&per_page=100&page=1'.format(
-        pytest.TEST_DOMAIN)
-    responses.add(responses.GET, task_url,
-                  json=task_data, status=200, content_type='application/json')
-    assert sync_tasks_by_filter('updated_at', 'open') is None
-    assert len(responses.calls) == 1
-
-
-@responses.activate
-def test_sync_accounts_by_filter():
-    """
-    Test sync of accounts, inject data via responses
-    """
-    sales_account_data = json.load(
-        open(os.path.join(pytest.TEST_DIR, 'mock_data/sales_accounts.json')))
-    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/view/1?per_page=100&page=1'.format(
-        pytest.TEST_DOMAIN)
-    responses.add(responses.GET, sales_account_url,
-                  json=sales_account_data, status=200, content_type='application/json')
-    assert sync_accounts_by_filter('updated_at', {'id': 1}) is None
+    endpoint_data = json.load(open(os.path.join(pytest.TEST_DIR, 'mock_data/{}.json'.format(endpoint))))
+    responses.add(responses.GET, endpoint_url,
+                  json=endpoint_data, status=200, content_type='application/json')
+    assert sync_current_endpoint_by_filter('updated_at', {'id': 1}) is None
     assert len(responses.calls) == 1
 
 

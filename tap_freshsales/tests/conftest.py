@@ -21,7 +21,3 @@ def default_session_fixture():
     pytest.TEST_DIR = TEST_DIR
     pytest.TEST_DOMAIN = TEST_DOMAIN
     # Globally activated responses from sample test data
-
-    
-
-    
