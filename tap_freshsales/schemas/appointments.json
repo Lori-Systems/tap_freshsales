@@ -24,19 +24,19 @@
         "time_zone": {
             "type": [
                 "null",
-                "text"
+                "string"
             ]
         },
         "title": {
             "type": [
                 "null",
-                "text"
+                "string"
             ]
         },
         "description": {
             "type": [
                 "null",
-                "text"
+                "string"
             ]
         },
         "creater_id": {
@@ -54,13 +54,13 @@
         "targetable_type": {
             "type": [
                 "null",
-                "text"
+                "string"
             ]
         },
         "location": {
             "type": [
                 "null",
-                "text"
+                "string"
             ]
         },
         "created_at": {
@@ -86,8 +86,11 @@
         "appointment_attendees_attributes": {
             "type": [
                 "null",
-                "Array of Objects"
-            ]
+                "array"
+            ],
+            "items": {
+                "type": ["null", "object"]
+            }
         },
         "outcome_id": {
             "type": [

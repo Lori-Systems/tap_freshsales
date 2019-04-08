@@ -13,6 +13,11 @@ setup(
         "singer-python==5.1.1",
         "requests==2.20.0",
     ],
+    extras_require={
+        'dev': [
+            'ipdb==0.11'
+        ]
+    },
     entry_points="""
     [console_scripts]
     tap-freshsales=tap_freshsales:main
