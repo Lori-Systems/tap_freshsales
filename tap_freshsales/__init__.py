@@ -17,7 +17,6 @@ from singer import utils, metadata
 
 from tap_freshsales import tap_utils
 
-
 REQUIRED_CONFIG_KEYS = ["api_key", "domain", "start_date"]
 PER_PAGE = 100
 BASE_URL = "https://{}.freshsales.io"
@@ -49,7 +48,7 @@ def request(url, params=None):
         headers['User-Agent'] = CONFIG['user_agent']
 
     if 'api_key' in CONFIG:
-        headers['Authorization'] = 'Token token='+CONFIG['api_key']
+        headers['Authorization'] = 'Token token=' + CONFIG['api_key']
 
     req = requests.Request('GET', url, params=params,
                            headers=headers).prepare()
@@ -72,16 +71,16 @@ def get_url(endpoint, **kwargs):
     """
     Create approprate freshsales URL to create API call to relevant stream
     """
-    return BASE_URL.format(CONFIG['domain']) + endpoints[endpoint].format(**kwargs)
+    return BASE_URL.format(CONFIG['domain']) + \
+        endpoints[endpoint].format(**kwargs)
 
 # Generate request for a given REST API URL
 
 
-def gen_request(url, params=None):
+def gen_request(url, params={}):
     """
     Generator to yields rows of data for given stream
     """
-    params = params or {}
     params["per_page"] = PER_PAGE
     page = 1
     # TODO: Meta tag carries number of pages
@@ -90,7 +89,7 @@ def gen_request(url, params=None):
         params['page'] = page
         data = request(url, params).json()
         data_list = []
-        if type(data) == type({}):
+        if isinstance(data, type({})):
             # TODO: Most API endpoint results the first key is data
             first_key = list(data.keys())[0]
             if first_key == 'filters':
@@ -175,265 +174,161 @@ def get_filters(endpoint):
     endpoint in the supported streams
     """
     url = get_url(endpoint, query='filters')
-    filters = list(gen_request(url))[0]['filters']
-    return filters
+    return list(gen_request(url))[0]['filters']
 
 
-def get_start(entity):
+def get_start(endpoint, filter_id=None):
     """
     Get bookmarked start time for specific entity
     (defined as combination of endpoint and filter)
     data before this start time is ignored
     """
-    if entity not in STATE:
-        STATE[entity] = CONFIG['start_date']
-    return STATE[entity]
+    if endpoint in endpoints_mapper:
+        params = endpoints_mapper[endpoint]
+        entity = "{}{}".format(params['entity'], filter_id) if \
+            filter_id else endpoint
+        if entity not in STATE:
+            STATE[entity] = CONFIG['start_date']
+        return STATE[entity]
+    return None
 
 # TODO: This is very WET code , clean it up with streams mechanism
 # Sync accounts
 
 
-def sync_accounts():
+def sync_endpoint(endpoint):
     """
     Sync Sales Accounts Data, Standard schema is kept as columns,
     Custom fields are saved as JSON content
     """
-    bookmark_property = 'updated_at'
-    endpoint = 'accounts'
+
+    bookmark_properties = endpoints_mapper[endpoint]['bookmark_property']
     schema = tap_utils.load_schema(endpoint)
     singer.write_schema(endpoint,
                         schema,
                         ["id"],
                         bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint)
-    for fil in filters:
-        sync_accounts_by_filter(bookmark_property, fil)
+    filters = endpoints_mapper[endpoint]['filters'] or get_filters(endpoint)
+    if endpoint == 'sales_activities':
+        start = get_start(endpoint)
+        singer.write_schema(endpoint,
+                            tap_utils.load_schema(endpoint),
+                            ["id"],
+                            bookmark_properties=[bookmark_property])
+        sales = gen_request(get_url(endpoint))
+        for sale in sales:
+            if sale[bookmark_property] >= start:
+                LOGGER.info("Sale {}: Syncing details".format(sale['id']))
+                singer.write_record("sale_activities", sale,
+                                    time_extracted=singer.utils.now())
+    else:
+        for fil in filters:
+            sync_endpoint_by_filter(endpoint, fil)
 
-# Batch sync accounts while bookmarking updated at
 
-
-def sync_accounts_by_filter(bookmark_prop, fil):
+def sync_endpoint_by_filter(endpoint, filter):
     """
     Sync accounts by view based filters, use bookmark property
     to manage state and fetch data updated since particular time
     """
-    endpoint = 'accounts'
-    fil_id = fil['id']
-    state_entity = endpoint + "_" + str(fil_id)
-    start = get_start(state_entity)
-    accounts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
-    for acc in accounts:
-        if acc[bookmark_prop] >= start:
-            LOGGER.info("Account {}: Syncing details".format(acc['id']))
-            acc['custom_field'] = json.dumps(acc['custom_field'])
+    params = endpoints_mapper[endpoint]
+    bookmark_property = params['bookmark_property']
+    filter_id = filter if endpoint in ['tasks'] else filter['id']
+    start = get_start(endpoint, str(filter_id))
+    query = params['query'] + str(filter_id) if \
+        params['query'] else ''
+
+    if endpoint == 'tasks':
+        items = gen_request(
+            get_url(
+                endpoint,
+                filter=filter_id,
+                include='owner,users,targetable'))
+    elif endpoint == 'appointments':
+        items = gen_request(
+            get_url(
+                endpoint,
+                filter=filter_id,
+                include='creater,targetable,appointment_attendees'))
+    else:
+        items = gen_request(get_url(endpoint, query=query))
+
+    for item in items:
+        if endpoint == 'accounts':
+            if item[bookmark_property] >= start:
+                item['custom_field'] = json.dumps(item['custom_field'])
+                singer.write_record(
+                    endpoint, item, time_extracted=singer.utils.now())
+        elif endpoint == 'contacts':
+            if item[bookmark_property] >= start:
+                tap_utils.update_state(STATE, endpoint + "_" + str(fil_id),
+                                       item[bookmark_property])
+                singer.write_state(STATE)
+        elif endpoint == 'leads':
+            if item[bookmark_property] >= start:
+                singer.write_record(
+                    endpoint, item, time_extracted=singer.utils.now())
+        elif endpoint == 'tasks':
             singer.write_record(
-                "accounts", acc, time_extracted=singer.utils.now())
-
-
-def sync_contacts():
-    """
-    Sync Sales Accounts Data, Standard schema is kept as columns,
-    Custom fields are saved as JSON content
-    """
-    bookmark_property = 'updated_at'
-    endpoint = 'contacts'
-    schema = tap_utils.load_schema(endpoint)
-    singer.write_schema(endpoint,
-                        schema,
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint)
-    for fil in filters:
-        sync_contacts_by_filter(bookmark_property, fil)
-
-# Batch sync contacts while bookmarking updated at
-
-
-def sync_contacts_by_filter(bookmark_prop, fil):
-    """
-    Sync all contacts updated after bookmark time
-    """
-    endpoint = 'contacts'
-    fil_id = fil['id']
-    state_entity = endpoint + "_" + str(fil_id)
-    start = get_start(state_entity)
-    contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
-    for con in contacts:
-        if con[bookmark_prop] >= start:
-            LOGGER.info("Contact {}: Syncing details".format(con['id']))
-            tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
-            singer.write_record(
-                endpoint, con, time_extracted=singer.utils.now())
-            singer.write_state(STATE)
-
-# Batch sync deals and stages of deals
-
-
-def sync_deals():
-    """
-    Sync deals for every view
-    """
-    bookmark_property = 'updated_at'
-    endpoint = 'deals'
-    singer.write_schema(endpoint,
-                        tap_utils.load_schema(endpoint),
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint)
-    for fil in filters:
-        sync_deals_by_filter(bookmark_property, fil)
-
-# Batch sync deals with bookmarking on update time
-
-
-def sync_deals_by_filter(bookmark_prop, fil):
-    """
-    Iterate over all deal filter to sync all deal data
-    """
-    endpoint = 'deals'
-    fil_id = fil['id']
-    state_entity = endpoint + "_" + str(fil_id)
-    start = get_start(state_entity)
-    deals = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
-    for deal in deals:
-        if deal[bookmark_prop] >= start:
-            # get all sub-entities and save them
-            deal['amount'] = float(deal['amount'])  # cast amount to float
-            deal['custom_field'] = json.dumps(
-                deal['custom_field'])  # Make JSON String to store
-            LOGGER.info("Deal {}: Syncing details".format(deal['id']))
-            singer.write_record(
-                "deals", deal, time_extracted=singer.utils.now())
-
-# Sync leads across all filters
-
-
-def sync_leads():
-    """
-    Sync leads data and call out to per-filter sync
-    """
-    bookmark_property = 'updated_at'
-    endpoint = 'leads'
-    singer.write_schema(endpoint,
-                        tap_utils.load_schema(endpoint),
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint)
-    for fil in filters:
-        sync_leads_by_filter(bookmark_property, fil)
-
-# Fetch leads for a particular filter for sync
-
-
-def sync_leads_by_filter(bookmark_prop, fil):
-    """
-    Iterate over all leads in a filter and consume generator
-    to yield schema rows
-    """
-    endpoint = 'leads'
-    fil_id = fil['id']
-    state_entity = endpoint + "_" + str(fil_id)
-    start = get_start(state_entity)
-    leads = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
-    for lead in leads:
-        if lead[bookmark_prop] >= start:
-            LOGGER.info("Lead {}: Syncing details".format(lead['id']))
-            singer.write_record(
-                "leads", lead, time_extracted=singer.utils.now())
-
-# Fetch tasks stream
-
-
-def sync_tasks():
-    """
-    Sync all task based on filters
-    """
-    endpoint = 'tasks'
-    bookmark_property = 'updated_at'
-    singer.write_schema(endpoint,
-                        tap_utils.load_schema(endpoint),
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    # Hardcoded task filters
-    filters = ['open', 'due today', 'due tomorrow', 'overdue', 'completed']
-    for fil in filters:
-        sync_tasks_by_filter(bookmark_property, fil)
-
-# Fetch tasks by all applicable filters
-
-
-def sync_tasks_by_filter(bookmark_prop, fil):
-    """
-    Sync tasks for a specific filter
-    """
-    endpoint = 'tasks'
-    state_entity = endpoint + "_" + str(fil)
-    # TODO: Verify updated-at exists for tasks
-    #start = get_start(state_entity)
-    tasks = gen_request(get_url(endpoint, filter=fil,
-                                include='owner,users,targetable'))
-    for task in tasks:
-        LOGGER.info("Task {}: Syncing details".format(task['id']))
-        singer.write_record(endpoint, task, time_extracted=singer.utils.now())
-
-
-# Fetch sales_activities stream
-def sync_sales_activities():
-    """Sync all sales activities, call out to individual filters
-    """
-
-    bookmark_property = 'updated_at'
-    endpoint = 'sales_activities'
-    state_entity = endpoint
-    start = get_start(state_entity)
-    singer.write_schema(endpoint,
-                        tap_utils.load_schema(endpoint),
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    sales = gen_request(get_url(endpoint))
-    for sale in sales:
-        if sale[bookmark_property] >= start:
-            LOGGER.info("Sale {}: Syncing details".format(sale['id']))
-            singer.write_record("sale_activities", sale,
+                endpoint, item, time_extracted=singer.utils.now())
+        elif endpoint == 'appointments':
+            singer.write_record(endpoint, item,
                                 time_extracted=singer.utils.now())
+        elif endpoint == 'deals':
+            if item[bookmark_property] >= start:
+                # get all sub-entities and save them
+                item['amount'] = float(item['amount'])  # cast amount to float
+                item['custom_field'] = json.dumps(
+                    item['custom_field'])  # Make JSON String to store
+                singer.write_record(
+                    endpoint, item, time_extracted=singer.utils.now())
 
-# Fetch all team appointments
-
-
-def sync_appointments():
-    """Sync all appointments
-    """
-
-    endpoint = 'appointments'
-    bookmark_property = 'updated_at'
-    filters = ['past', 'upcoming']
-    singer.write_schema(endpoint,
-                        tap_utils.load_schema(endpoint),
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    for fil in filters:
-        sync_appointments_by_filter(bookmark_property, fil)
-
-# Fetch team appointments by filter
+        LOGGER.info("{} {}: Syncing details".format(endpoint, item['id']))
 
 
-def sync_appointments_by_filter(bookmark_property, fil):
-    """Iterate over all appointment filter to sync
-
-    Arguments:
-        bookmark_property {[str]} -- [Field used to bookmark stream]
-        fil {[str]} -- [Filter string which yields a subset of the stream]
-    """
-
-    endpoint = 'appointments'
-    # TODO: Verify updated_at exists for appointments
-    #start = get_start(endpoint)
-    appts = gen_request(get_url(endpoint, filter=fil,
-                                include='creater,targetable,appointment_attendees'))
-    for appoint in appts:
-        LOGGER.info("Appointment {}: Syncing details".format(appoint['id']))
-        singer.write_record(endpoint, appoint,
-                            time_extracted=singer.utils.now())
+endpoints_mapper = {
+    'accounts': {
+        'bookmark_property': 'updated_at',
+        'filters': None,
+        'query': 'view/',
+        'entity': 'accounts_'},
+    'contacts': {
+        'bookmark_property': 'updated_at',
+        'filters': None,
+        'query': 'view/',
+        'entity': 'contacts_'},
+    'deals': {
+        'bookmark_property': 'updated_at',
+        'filters': None,
+        'query': 'view/',
+        'entity': 'deals_'},
+    'leads': {
+        'bookmark_property': 'updated_at',
+        'filters': None,
+        'query': 'view/',
+        'entity': 'leads_'},
+    'tasks': {
+        'bookmark_property': 'updated_at',
+        'filters': [
+            'open',
+            'due today',
+            'due tomorrow',
+            'overdue',
+            'completed'],
+        'query': '',
+        'entity': 'tasks_'},
+    'sales_activities': {
+        'bookmark_property': 'updated_at',
+        'filters': None,
+        'query': '',
+        'entity': None},
+    'appointments': {
+        'bookmark_property': 'updated_at',
+        'filters': [
+            'past',
+            'upcoming'],
+        'query': '',
+        'entity': 'appointments'}}
 
 
 def sync(config, state, catalog):
@@ -452,21 +347,11 @@ def sync(config, state, catalog):
     # TODO: Use map based function compresenion to link fetch
     # function and stream name
     selected_streams = get_selected_streams(catalog)
+    items = set(endpoints_mapper.keys())
     try:
-        if 'contacts' in selected_streams:
-            sync_contacts()
-        if 'appointments' in selected_streams:
-            sync_appointments()
-        if 'deals' in selected_streams:
-            sync_deals()
-        if 'sales_activities' in selected_streams:
-            sync_sales_activities()
-        if 'leads' in selected_streams:
-            sync_leads()
-        if 'accounts' in selected_streams:
-            sync_accounts()
-        if 'tasks' in selected_streams:
-            sync_tasks()
+        for x in items:
+            if x in selected_streams:
+                sync_endpoint(x)
     except HTTPError as e:
         LOGGER.critical(
             "Error making request to FreshSales API: GET %s: [%s - %s]",
@@ -489,7 +374,7 @@ def main():
     if args.discover:
         catalog = discover()
         catalog_string = json.dumps(catalog, indent=2)
-        #LOGGER.info(catalog_string)
+        # LOGGER.info(catalog_string)
         print(catalog_string)
     # Otherwise run in sync mode
     else:

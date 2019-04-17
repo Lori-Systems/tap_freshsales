@@ -6,17 +6,19 @@ import json
 import os
 import responses
 import pytest
-from tap_freshsales import discover, sync_contacts_by_filter
-from tap_freshsales import sync_accounts_by_filter
-from tap_freshsales import sync_deals_by_filter
-from tap_freshsales import sync_tasks_by_filter
-from tap_freshsales import load_schemas, get_start
+from tap_freshsales import (
+    get_start,
+    load_schemas,
+    discover,
+    sync_endpoint,
+    sync_endpoint_by_filter
+)
 
 
 def test_get_start():
     """Test obtaining of start time from entity state
     """
-    assert get_start(None)
+    assert get_start('test', 1) == None
 
 
 def test_load_schemas():
@@ -36,7 +38,7 @@ def test_sync_contacts_by_filter():
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, contact_url,
                   json=contact_data, status=200, content_type='application/json')
-    assert sync_contacts_by_filter('updated_at', {'id': 1}) is None
+    assert sync_endpoint_by_filter('contacts', {'id': 1}) is None
     assert len(responses.calls) == 1
 
 
@@ -51,7 +53,7 @@ def test_sync_deals_by_filter():
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, deal_url,
                   json=deal_data, status=200, content_type='application/json')
-    assert sync_deals_by_filter('updated_at', {'id': 1}) is None
+    assert sync_endpoint_by_filter('deals', {'id': 1}) is None
     assert len(responses.calls) == 1
 
 
@@ -66,7 +68,7 @@ def test_sync_tasks_by_filter():
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, task_url,
                   json=task_data, status=200, content_type='application/json')
-    assert sync_tasks_by_filter('updated_at', 'open') is None
+    assert sync_endpoint_by_filter('tasks', 'open') is None
     assert len(responses.calls) == 1
 
 
@@ -81,7 +83,7 @@ def test_sync_accounts_by_filter():
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, sales_account_url,
                   json=sales_account_data, status=200, content_type='application/json')
-    assert sync_accounts_by_filter('updated_at', {'id': 1}) is None
+    assert sync_endpoint_by_filter('accounts', {'id': 1}) is None
     assert len(responses.calls) == 1
 
 
