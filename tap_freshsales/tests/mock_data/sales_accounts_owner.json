@@ -1,0 +1,56 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "display_name": "Joshua Njoroge",
+            "email": "test@gmail.com",
+            "is_active": true,
+            "work_number": "19292586081",
+            "mobile_number": "+19292586081"
+        }
+    ],
+    "sales_account": {
+        "id": 9000001051,
+        "name": "test_account",
+        "address": "160-6802 Aliquet Rd.",
+        "city": "New Haven",
+        "state": "Connecticut",
+        "zipcode": "68089",
+        "country": "United States",
+        "number_of_employees": null,
+        "annual_revenue": null,
+        "website": "widgetz.io",
+        "owner_id": 1,
+        "phone": "503-615-3947",
+        "open_deals_amount": "0.0",
+        "open_deals_count": 0,
+        "won_deals_amount": "0.0",
+        "won_deals_count": 0,
+        "last_contacted": null,
+        "last_contacted_mode": null,
+        "facebook": null,
+        "twitter": null,
+        "linkedin": null,
+        "links": {
+            "conversations": "/sales_accounts/9000001051/conversations/all?include=email_conversation_recipients%2Ctargetable%2Cphone_number%2Cphone_caller%2Cnote%2Cuser\u0026per_page=3",
+            "document_associations": "/sales_accounts/9000001051/document_associations",
+            "notes": "/sales_accounts/9000001051/notes?include=creater",
+            "tasks": "/sales_accounts/9000001051/tasks?include=creater,owner,updater,targetable,users,task_type",
+            "appointments": "/sales_accounts/9000001051/appointments?include=creater,owner,updater,targetable,appointment_attendees"
+        },
+        "custom_field": {},
+        "created_at": "2019-07-21T10:20:15Z",
+        "updated_at": "2019-07-21T10:20:15Z",
+        "avatar": null,
+        "parent_sales_account_id": null,
+        "recent_note": null,
+        "last_contacted_via_chat": null,
+        "last_contacted_via_sales_activity": null,
+        "last_contacted_sales_activity_mode": null,
+        "completed_sales_sequences": null,
+        "active_sales_sequences": null,
+        "last_assigned_at": "2019-07-21T10:20:16Z",
+        "tags": [],
+        "is_deleted": false
+    }
+}
