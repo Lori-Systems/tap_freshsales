@@ -7,9 +7,9 @@ import os
 import responses
 import pytest
 from tap_freshsales import discover, sync_contacts_by_filter, sync_contacts_owner
-from tap_freshsales import sync_accounts_by_filter, sync_accounts_owner
-from tap_freshsales import sync_deals_by_filter, sync_deals_owner, sync_leads_owner
-from tap_freshsales import sync_tasks_by_filter
+from tap_freshsales import sync_accounts_by_filter, sync_appointments_by_filter, sync_accounts_owner
+from tap_freshsales import sync_deals_by_filter, sync_leads_by_filter, sync_leads_owner, sync_deals_owner
+from tap_freshsales import sync_sales_activities, sync_tasks_by_filter
 from tap_freshsales import load_schemas, get_start
 
 
@@ -40,6 +40,13 @@ def test_sync_contacts_by_filter():
     assert len(responses.calls) == 1
 
 
+def test_sync_contacts_by_filter():
+    """
+    Test sync of contacts, inject data via responses
+    """
+    assert sync_contacts_by_filter(None,None)
+
+
 @responses.activate
 def test_sync_contacts_owner():
     """
@@ -53,6 +60,12 @@ def test_sync_contacts_owner():
                   json=contact_data, status=200, content_type='application/json')
     assert sync_contacts_owner('is_active',{'id': 1}) is None
     assert len(responses.calls) == 1
+    
+def test_sync_contacts_owner():
+    """
+    Test sync of deal owner, inject data via responses
+    """
+    assert test_sync_contacts_owner(None,None)
 
 
 @responses.activate
@@ -82,6 +95,20 @@ def test_sync_deals_owner():
                   json=deal_data, status=200, content_type='application/json')
     assert sync_deals_owner('is_active',{'id': 1}) is None
     assert len(responses.calls) == 1
+
+def test_sync_deals_owner():
+    """
+    Test sync of deal owner, inject data via responses
+    """
+    assert test_sync_deals_owner(None,None)
+
+
+def test_sync_leads_owner():
+    """
+    Test sync of leads owners, inject data via responses
+    """
+    assert test_sync_leads_owner(None,None)
+
 
 @responses.activate
 def test_sync_tasks_by_filter():
@@ -140,6 +167,7 @@ def test_sync_accounts_owner():
                   json=sales_account_owner_data, status=200, content_type='application/json')
     assert sync_accounts_owner('is_active',{'id': 1}) is None
     assert len(responses.calls) == 1
+
 
 
 def test_tap_discover():
