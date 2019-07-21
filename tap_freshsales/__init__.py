@@ -230,12 +230,12 @@ def sync_accounts_by_filter(bookmark_prop, fil):
 
 def sync_accounts_owner(bookmark_prop,fil):
     """
-    Sync accounts owners for a specific deal
+    Sync accounts owners
     """
     endpoint = 'accounts'
     fil_id = fil['id']
     # TODO: Verify that is_active is true for the owner
-    accounts = gen_request(get_url(endpoint, query='view/' + str(fil_id)+ '?include=owner'))
+    accounts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
     
     for account in accounts:
         if account[bookmark_prop] is True:

@@ -51,7 +51,7 @@ def test_sync_contacts_owner():
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, contact_url,
                   json=contact_data, status=200, content_type='application/json')
-    assert sync_accounts_owner('is_active',{'id': 1}) is None
+    assert sync_contacts_owner('is_active',{'id': 1}) is None
     assert len(responses.calls) == 1
 
 
@@ -132,12 +132,12 @@ def test_sync_accounts_owner():
     """
     Test sync of accounts owner, inject data via responses
     """
-    sales_account_data = json.load(
+    sales_account_owner_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/sales_accounts_owner.json')))
-    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/view/1?include=owner&per_page=100&page=1'.format(
+    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/1?include=owner&per_page=100&page=1'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, sales_account_url,
-                  json=sales_account_data, status=200, content_type='application/json')
+                  json=sales_account_owner_data, status=200, content_type='application/json')
     assert sync_accounts_owner('is_active',{'id': 1}) is None
     assert len(responses.calls) == 1
 
