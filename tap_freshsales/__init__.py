@@ -114,10 +114,11 @@ def load_schemas():
     schemas = {}
 
     for filename in os.listdir(tap_utils.get_abs_path('schemas')):
-        path = tap_utils.get_abs_path('schemas') + '/' + filename
-        file_raw = filename.replace('.json', '')
-        with open(path) as file:
-            schemas[file_raw] = json.load(file)
+        if filename.endswith(".json"):
+            path = tap_utils.get_abs_path('schemas') + '/' + filename
+            file_raw = filename.replace('.json', '')
+            with open(path) as file:
+                schemas[file_raw] = json.load(file)
 
     return schemas
 
@@ -130,44 +131,22 @@ def discover():
     streams = []
 
     for schema_name, schema in raw_schemas.items():
-
-        # Default metadata templated on
-        # https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md
-        default_meta = {
-            "metadata": {
-                "inclusion": "available",
-                "table-key-properties": ["id"],
-                "selected": True,
-                "valid-replication-keys": ["updated_at"],
-                "schema-name": schema_name,
-            },
-            "breadcrumb": []
-        }
-        # Each stream uses id as the primary key
-        id_meta = {
-            "metadata": {
-                "inclusion": "automatic",
-            },
-            "breadcrumb": ["properties", "id"]
-        }
-        # Each stream has updated_at times
-        bookmark_meta = {
-            "metadata": {
-                "inclusion": "automatic",
-            },
-            "breadcrumb": ["properties", "updated_at"]
-        }
-
-        stream_metadata = [default_meta, id_meta, bookmark_meta]
-        stream_key_properties = []
+        mdata = metadata.new()
+        mdata = metadata.write(mdata, (), 'table-key-properties', ['id'])
+        mdata = metadata.write(mdata, ('properties', 'id'), 'inclusion', 'automatic')
+        mdata = metadata.write(mdata, (), 'valid-replication-keys', ['updated_at'])
+        mdata = metadata.write(mdata, ('properties', 'updated_at'), 'inclusion', 'automatic')
+        for field_name in schema['properties'].keys():
+            if field_name not in {'id', 'updated_at'}:
+                mdata = metadata.write(mdata, ('properties', field_name), 'inclusion', 'available')
 
         # create and add catalog entry
         catalog_entry = {
             'stream': schema_name,
             'tap_stream_id': schema_name,
             'schema': schema,
-            'metadata': stream_metadata,
-            'key_properties': stream_key_properties
+            'metadata': metadata.to_list(mdata),
+            'key_properties': ['id']
         }
         streams.append(catalog_entry)
 
@@ -181,7 +160,6 @@ def get_selected_streams(catalog):
     and mdata with a 'selected' entry
     """
     selected_streams = []
-    # TODO: Resolve why cookie-cutter uses arribute dict notation
     for stream in catalog['streams']:
         stream_metadata = metadata.to_map(stream['metadata'])
         # stream metadata will have an empty breadcrumb
@@ -510,11 +488,13 @@ def main():
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
         catalog = discover()
-        LOGGER.info(json.dumps(catalog, indent=2))
+        catalog_string = json.dumps(catalog, indent=2)
+        #LOGGER.info(catalog_string)
+        print(catalog_string)
     # Otherwise run in sync mode
     else:
         if args.catalog:
-            catalog = args.catalog
+            catalog = args.catalog.to_dict()
         else:
             catalog = discover()
 

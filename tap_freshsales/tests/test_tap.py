@@ -2,11 +2,42 @@
 and check output from stdout via singer.io API calls
 """
 
+import json
+import os
+import responses
 import pytest
 from tap_freshsales import discover, sync_contacts_by_filter, sync_contacts_owner
 from tap_freshsales import sync_accounts_by_filter, sync_appointments_by_filter, sync_accounts_owner
 from tap_freshsales import sync_deals_by_filter, sync_leads_by_filter, sync_leads_owner, sync_deals_owner
 from tap_freshsales import sync_sales_activities, sync_tasks_by_filter
+from tap_freshsales import load_schemas, get_start
+
+
+def test_get_start():
+    """Test obtaining of start time from entity state
+    """
+    assert get_start(None)
+
+
+def test_load_schemas():
+    """Test schema loading by the tap
+    """
+    assert load_schemas()
+
+
+@responses.activate
+def test_sync_contacts_by_filter():
+    """
+    Test sync of contacts, inject data via responses
+    """
+    contact_data = json.load(
+        open(os.path.join(pytest.TEST_DIR, 'mock_data/contacts.json')))
+    contact_url = 'https://{}.freshsales.io/api/contacts/view/1?per_page=100&page=1'.format(
+        pytest.TEST_DOMAIN)
+    responses.add(responses.GET, contact_url,
+                  json=contact_data, status=200, content_type='application/json')
+    assert sync_contacts_by_filter('updated_at', {'id': 1}) is None
+    assert len(responses.calls) == 1
 
 
 def test_sync_contacts_by_filter():
@@ -16,18 +47,19 @@ def test_sync_contacts_by_filter():
     assert sync_contacts_by_filter(None,None)
 
 
-def test_sync_contacts_by_filter():
-    """
-    Test sync of contacts, inject data via responses
-    """
-    assert sync_contacts_by_filter(None,None)
-
-
+@responses.activate
 def test_sync_deals_by_filter():
     """
     Test sync of deals, inject data via responses
     """
-    assert sync_deals_by_filter(None,None)
+    deal_data = json.load(
+        open(os.path.join(pytest.TEST_DIR, 'mock_data/deals.json')))
+    deal_url = 'https://{}.freshsales.io/api/deals/view/1?per_page=100&page=1'.format(
+        pytest.TEST_DOMAIN)
+    responses.add(responses.GET, deal_url,
+                  json=deal_data, status=200, content_type='application/json')
+    assert sync_deals_by_filter('updated_at', {'id': 1}) is None
+    assert len(responses.calls) == 1
 
 
 def test_sync_deals_owner():
@@ -44,18 +76,34 @@ def test_sync_leads_owner():
     assert test_sync_leads_owner(None,None)
 
 
+@responses.activate
 def test_sync_tasks_by_filter():
     """
     Test sync of tasks, inject data via responses
     """
-    assert sync_tasks_by_filter(None,None)
+    task_data = json.load(
+        open(os.path.join(pytest.TEST_DIR, 'mock_data/tasks.json')))
+    task_url = 'https://{}.freshsales.io/api/tasks?filter=open&include=owner,users,targetable&per_page=100&page=1'.format(
+        pytest.TEST_DOMAIN)
+    responses.add(responses.GET, task_url,
+                  json=task_data, status=200, content_type='application/json')
+    assert sync_tasks_by_filter('updated_at', 'open') is None
+    assert len(responses.calls) == 1
 
 
+@responses.activate
 def test_sync_accounts_by_filter():
     """
     Test sync of accounts, inject data via responses
     """
-    assert sync_accounts_by_filter(None,None)
+    sales_account_data = json.load(
+        open(os.path.join(pytest.TEST_DIR, 'mock_data/sales_accounts.json')))
+    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/view/1?per_page=100&page=1'.format(
+        pytest.TEST_DOMAIN)
+    responses.add(responses.GET, sales_account_url,
+                  json=sales_account_data, status=200, content_type='application/json')
+    assert sync_accounts_by_filter('updated_at', {'id': 1}) is None
+    assert len(responses.calls) == 1
 
 
 def test_sync_accounts_owner():
@@ -72,4 +120,7 @@ def test_tap_discover():
     stream_def = discover()
     assert stream_def
     # Ensure some metadata exists
-    assert stream_def['streams'][0]['metadata']
+    for stream in stream_def['streams']:
+        assert stream['metadata']
+        print(stream['metadata'])
+        assert not ('selected' in stream['metadata'][0])

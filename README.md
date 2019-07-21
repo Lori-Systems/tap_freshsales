@@ -4,6 +4,8 @@ This is a [Singer](https://singer.io) tap that produces JSON-formatted data
 following the [Singer
 spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
+Build Status: [![CircleCI](https://circleci.com/gh/Lori-Systems/tap_freshsales/tree/master.svg?style=svg)](https://circleci.com/gh/Lori-Systems/tap_freshsales/tree/master)
+
 This tap:
 
 - Pulls raw data from [FreshSales REST API](https://www.freshsales.io/api)
