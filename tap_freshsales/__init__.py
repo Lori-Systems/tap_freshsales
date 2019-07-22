@@ -221,7 +221,7 @@ def sync_accounts_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    accounts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
+    accounts = gen_request(get_url(endpoint, query='view/'+str(fil_id)+'?include=owner&sort='+bookmark_prop+'&sort_type=desc'))
     for acc in accounts:
         if acc[bookmark_prop] >= start:
             LOGGER.info("Account {}: Syncing details".format(acc['id']))
@@ -257,7 +257,7 @@ def sync_contacts_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
+    contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id)+'?include=owner&sort='+bookmark_prop+'&sort_type=desc'))
     for con in contacts:
         if con[bookmark_prop] >= start:
             LOGGER.info("Contact {}: Syncing details".format(con['id']))
@@ -294,7 +294,7 @@ def sync_deals_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    deals = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
+    deals = gen_request(get_url(endpoint, query='view/'+str(fil_id)+'?include=owner&sort='+bookmark_prop+'&sort_type=desc'))
     for deal in deals:
         if deal[bookmark_prop] >= start:
             # get all sub-entities and save them
@@ -334,7 +334,7 @@ def sync_leads_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    leads = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
+    leads = gen_request(get_url(endpoint, query='view/'+str(fil_id)+'?include=owner&sort='+bookmark_prop+'&sort_type=desc'))
     for lead in leads:
         if lead[bookmark_prop] >= start:
             LOGGER.info("Lead {}: Syncing details".format(lead['id']))
