@@ -11,6 +11,7 @@ import sys
 import time
 import backoff
 import requests
+import re
 from requests.exceptions import HTTPError
 import singer
 from singer import utils, metadata
@@ -27,10 +28,10 @@ LOGGER = singer.get_logger()
 SESSION = requests.Session()
 
 endpoints = {
-    "leads": "/api/leads/{query}",
-    "contacts": "/api/contacts/{query}",
-    "accounts": "/api/sales_accounts/{query}",
-    "deals": "/api/deals/{query}",
+    "leads": "/api/leads/{query}?include={include}",
+    "contacts": "/api/contacts/{query}?include={include}",
+    "accounts": "/api/sales_accounts/{query}?include={include}",
+    "deals": "/api/deals/{query}?include={include}",
     "tasks": "/api/tasks?filter={filter}&include={include}",
     "appointments": "/api/appointments?filter={filter}&include={include}",
     "sales_activities": "/api/sales_activities/"
@@ -92,15 +93,25 @@ def gen_request(url, params=None):
         data_list = []
         if type(data) == type({}):
             # TODO: Most API endpoint results the first key is data
-            first_key = list(data.keys())[0]
-            if first_key == 'filters':
+            all_keys = list(data.keys())
+            if all_keys[0] == 'filters':
                 yield data
-            elif first_key == 'meta':
+            elif all_keys[0] == 'meta':
                 break
             else:
-                data_list = data[first_key]
-                for row in data_list:
-                    yield row
+                # Pick resource key if exists
+                rkey = re.search('api/(\w+)', url)
+                if rkey and rkey.group(1) in data:       
+                    data_list = data[rkey.group(1)]                    
+                    for row in data_list:
+                        #check if owner (users key) exists and add first to data
+                        if 'users' in data:
+                            fuser = data["users"][0]
+                            row['users'] = data["users"][0]
+                        yield row
+                else:
+                    LOGGER.info("No matching key for "+url)
+                    break
             if len(data_list) == PER_PAGE:
                 page += 1
             else:
@@ -174,7 +185,8 @@ def get_filters(endpoint):
     Use Freshsales API structure to derive filters for an
     endpoint in the supported streams
     """
-    url = get_url(endpoint, query='filters')
+    url = get_url(endpoint, query='filters',
+                                include='owner')
     filters = list(gen_request(url))[0]['filters']
     return filters
 
@@ -221,7 +233,8 @@ def sync_accounts_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    accounts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
+    accounts = gen_request(get_url(endpoint, query='view/'+str(fil_id),
+                                include='owner'))
     for acc in accounts:
         if acc[bookmark_prop] >= start:
             LOGGER.info("Account {}: Syncing details".format(acc['id']))
@@ -257,7 +270,8 @@ def sync_contacts_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
+    contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id),
+                                include='owner'))
     for con in contacts:
         if con[bookmark_prop] >= start:
             LOGGER.info("Contact {}: Syncing details".format(con['id']))
@@ -294,7 +308,8 @@ def sync_deals_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    deals = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
+    deals = gen_request(get_url(endpoint, query='view/'+str(fil_id),
+                                include='owner'))
     for deal in deals:
         if deal[bookmark_prop] >= start:
             # get all sub-entities and save them
@@ -334,7 +349,8 @@ def sync_leads_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    leads = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
+    leads = gen_request(get_url(endpoint, query='view/'+str(fil_id),
+                                include='owner'))
     for lead in leads:
         if lead[bookmark_prop] >= start:
             LOGGER.info("Lead {}: Syncing details".format(lead['id']))
