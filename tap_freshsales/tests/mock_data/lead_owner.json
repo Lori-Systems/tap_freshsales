@@ -1,0 +1,110 @@
+{
+    "users": [
+        {
+            "id": 9000000532,
+            "display_name": "Edward ONdari",
+            "email": "eddieokemwa@gmail.com",
+            "is_active": true,
+            "work_number": null,
+            "mobile_number": "+254729932475"
+        }
+    ],
+    "leads": [
+        {
+            "id": 9000024451,
+            "job_title": "Sales Manager",
+            "department": "Sales",
+            "email": "janesampleton@gmail.com",
+            "emails": [
+                {
+                    "id": 9000021496,
+                    "value": "janesampleton@gmail.com",
+                    "is_primary": true,
+                    "_destroy": false
+                }
+            ],
+            "work_number": "(368) 493-2360",
+            "mobile_number": "1-926-652-9503",
+            "address": "604-5854 Beckford St.",
+            "city": "Glendale",
+            "state": "Arizona",
+            "zipcode": "100652",
+            "country": "USA",
+            "time_zone": "Arizona",
+            "do_not_disturb": false,
+            "display_name": "Jane Sampleton (sample)",
+            "avatar": null,
+            "keyword": "B2B Success",
+            "medium": "Blog",
+            "last_seen": "2019-07-20T11:14:55Z",
+            "last_contacted": "2019-07-20T11:14:55Z",
+            "lead_score": 15,
+            "lead_quality": "Cold",
+            "stage_updated_time": "2019-07-20T11:14:55Z",
+            "first_name": "Jane",
+            "last_name": "Sampleton (sample)",
+            "company": {
+                "id": 9000024451,
+                "name": "Widgetz.io (sample)",
+                "address": "160-6802 Aliquet Rd.",
+                "city": "New Haven",
+                "state": "Connecticut",
+                "zipcode": "68089",
+                "country": "United States",
+                "number_of_employees": null,
+                "annual_revenue": null,
+                "website": "widgetz.io",
+                "phone": "503-615-3947",
+                "industry_type_id": 9000031658,
+                "industry_type": {
+                    "partial": true,
+                    "id": 9000031658,
+                    "name": "Insurance",
+                    "position": 37
+                },
+                "business_type_id": 9000004653,
+                "business_type": {
+                    "partial": true,
+                    "id": 9000004653,
+                    "name": "Competitor",
+                    "position": 2
+                }
+            },
+            "deal": null,
+            "links": {
+                "conversations": "/leads/9000024451/conversations/all?include=email_conversation_recipients%2Ctargetable%2Cphone_number%2Cphone_caller%2Cnote%2Cuser&per_page=3",
+                "timeline_feeds": "/leads/9000024451/timeline_feeds",
+                "document_associations": "/leads/9000024451/document_associations",
+                "notes": "/leads/9000024451/notes?include=creater",
+                "tasks": "/leads/9000024451/tasks?include=creater,owner,updater,targetable,users,task_type",
+                "appointments": "/leads/9000024451/appointments?include=creater,owner,updater,targetable,appointment_attendees",
+                "duplicates": "/leads/9000024451/duplicates",
+                "connections": "/leads/9000024451/connections"
+            },
+            "custom_field": {},
+            "created_at": "2019-07-14T11:14:54Z",
+            "updated_at": "2019-07-21T11:14:55Z",
+            "last_contacted_sales_activity_mode": "Email",
+            "has_authority": false,
+            "email_status": "Active",
+            "last_contacted_mode": "Email Opened",
+            "recent_note": "Expressed interest in purchasing the product and requires a demo.",
+            "last_contacted_via_chat": null,
+            "last_contacted_via_sales_activity": "2019-07-20T11:14:55Z",
+            "completed_sales_sequences": null,
+            "active_sales_sequences": null,
+            "web_form_ids": null,
+            "last_assigned_at": "2019-07-21T11:14:55Z",
+            "tags": [],
+            "facebook": "http://facebook.com/profile.php?id=100010587455650",
+            "twitter": "https://twitter.com/janesampleton",
+            "linkedin": "http://linkedin.com/pub/jane-sampleton/109/39/b0",
+            "is_deleted": false,
+            "owner_id": 9000000532
+        }
+    ],
+    "meta": {
+        "total_pages": 1,
+        "total": 1
+    }
+}

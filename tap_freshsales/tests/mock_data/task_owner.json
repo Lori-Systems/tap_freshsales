@@ -1,0 +1,105 @@
+{
+    "users": [
+        {
+            "id": 9000000532,
+            "display_name": "Edward ONdari",
+            "avatar": null,
+            "type": "FdMultitenant::User",
+            "is_active": true,
+            "work_number": null,
+            "mobile_number": "+254729932475",
+            "email": "eddieokemwa@gmail.com"
+        }
+    ],
+    "contacts": [
+        {
+            "id": 9000004359,
+            "avatar": null,
+            "display_name": "James Sampleton (sample)",
+            "email": "jamessampleton@gmail.com",
+            "work_number": "(473)-160-8261",
+            "mobile_number": "1-926-555-9503"
+        }
+    ],
+    "leads": [
+        {
+            "id": 9000024451,
+            "avatar": null,
+            "display_name": "Jane Sampleton (sample)",
+            "email": "janesampleton@gmail.com",
+            "work_number": "(368) 493-2360",
+            "mobile_number": "1-926-652-9503"
+        }
+    ],
+    "tasks": [
+        {
+            "id": 9000001500,
+            "status": 0,
+            "title": "(Sample) Send the pricing quote",
+            "description": "Coordinate with Steve for the pricing quote and send it to James.",
+            "created_at": "2019-07-17T11:14:56Z",
+            "updated_at": "2019-07-21T11:14:56Z",
+            "owner_id": 9000000532,
+            "due_date": "2019-07-23T09:00:00Z",
+            "completed_date": null,
+            "creater_id": 9000000532,
+            "updater_id": null,
+            "outcome_id": null,
+            "task_type_id": null,
+            "user_ids": [
+                9000000532
+            ],
+            "targetable": {
+                "type": "contact",
+                "id": 9000004359
+            }
+        },
+        {
+            "id": 9000001498,
+            "status": 0,
+            "title": "(Sample) Follow-up with Jane",
+            "description": "Do a follow-up call with Jane.",
+            "created_at": "2019-07-15T11:14:54Z",
+            "updated_at": "2019-07-21T11:14:54Z",
+            "owner_id": 9000000532,
+            "due_date": "2019-07-22T10:00:00Z",
+            "completed_date": null,
+            "creater_id": 9000000532,
+            "updater_id": null,
+            "outcome_id": null,
+            "task_type_id": null,
+            "user_ids": [
+                9000000532
+            ],
+            "targetable": {
+                "type": "lead",
+                "id": 9000024451
+            }
+        },
+        {
+            "id": 9000001499,
+            "status": 0,
+            "title": "(Sample) Send the proposal document",
+            "description": "Send the proposal document and follow up with this contact after it.",
+            "created_at": "2019-07-17T11:14:56Z",
+            "updated_at": "2019-07-21T11:14:56Z",
+            "owner_id": 9000000532,
+            "due_date": "2019-07-22T08:00:00Z",
+            "completed_date": null,
+            "creater_id": 9000000532,
+            "updater_id": null,
+            "outcome_id": null,
+            "task_type_id": null,
+            "user_ids": [
+                9000000532
+            ],
+            "targetable": {
+                "type": "contact",
+                "id": 9000004359
+            }
+        }
+    ],
+    "meta": {
+        "total": 3
+    }
+}
