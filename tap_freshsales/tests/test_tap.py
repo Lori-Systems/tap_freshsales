@@ -32,7 +32,7 @@ def test_sync_contacts_by_filter():
     """
     contact_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/contacts.json')))
-    contact_url = 'https://{}.freshsales.io/api/contacts/view/1?per_page=100&page=1'.format(
+    contact_url = 'https://{}.freshsales.io/api/contacts/view/1?per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, contact_url,
                   json=contact_data, status=200, content_type='application/json')
@@ -47,7 +47,7 @@ def test_sync_deals_by_filter():
     """
     deal_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/deals.json')))
-    deal_url = 'https://{}.freshsales.io/api/deals/view/1?per_page=100&page=1'.format(
+    deal_url = 'https://{}.freshsales.io/api/deals/view/1?per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, deal_url,
                   json=deal_data, status=200, content_type='application/json')
@@ -62,7 +62,7 @@ def test_sync_tasks_by_filter():
     """
     task_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/tasks.json')))
-    task_url = 'https://{}.freshsales.io/api/tasks?filter=open&include=owner,users,targetable&per_page=100&page=1'.format(
+    task_url = 'https://{}.freshsales.io/api/tasks?filter=open&include=owner,users,targetable&per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, task_url,
                   json=task_data, status=200, content_type='application/json')
@@ -77,7 +77,7 @@ def test_sync_accounts_by_filter():
     """
     sales_account_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/sales_accounts.json')))
-    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/view/1?per_page=100&page=1'.format(
+    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/view/1?per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, sales_account_url,
                   json=sales_account_data, status=200, content_type='application/json')
