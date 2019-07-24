@@ -1,0 +1,85 @@
+{
+    "users": [
+        {
+            "id": 9000000532,
+            "display_name": "Edward ONdari",
+            "email": "eddieokemwa@gmail.com",
+            "is_active": true,
+            "work_number": null,
+            "mobile_number": "+254729932475"
+        }
+    ],
+    "contacts": [
+        {
+            "id": 9000004359,
+            "first_name": "James",
+            "last_name": "Sampleton (sample)",
+            "display_name": "James Sampleton (sample)",
+            "avatar": null,
+            "job_title": "CEO",
+            "city": "San Diego",
+            "state": "CA",
+            "zipcode": "92093",
+            "country": "USA",
+            "email": "jamessampleton@gmail.com",
+            "emails": [
+                {
+                    "id": 9000004107,
+                    "value": "jamessampleton@gmail.com",
+                    "is_primary": true,
+                    "_destroy": false
+                }
+            ],
+            "do_not_disturb": false,
+            "has_authority": false,
+            "time_zone": "Arizona",
+            "department": "Engineering",
+            "work_number": "(473)-160-8261",
+            "mobile_number": "1-926-555-9503",
+            "address": "1552 camp st",
+            "last_seen": "2019-07-20T11:14:56Z",
+            "lead_score": 30,
+            "lead_quality": "Cold",
+            "last_contacted": "2019-07-19T11:14:56Z",
+            "open_deals_amount": "0.0",
+            "won_deals_amount": "7000.0",
+            "links": {
+                "conversations": "/contacts/9000004359/conversations/all?include=email_conversation_recipients%2Ctargetable%2Cphone_number%2Cphone_caller%2Cnote%2Cuser&per_page=3",
+                "timeline_feeds": "/contacts/9000004359/timeline_feeds",
+                "document_associations": "/contacts/9000004359/document_associations",
+                "notes": "/contacts/9000004359/notes?include=creater",
+                "tasks": "/contacts/9000004359/tasks?include=creater,owner,updater,targetable,users,task_type",
+                "appointments": "/contacts/9000004359/appointments?include=creater,owner,updater,targetable,appointment_attendees",
+                "duplicates": "/contacts/9000004359/duplicates",
+                "connections": "/contacts/9000004359/connections"
+            },
+            "last_contacted_sales_activity_mode": "Email",
+            "custom_field": {},
+            "created_at": "2019-07-21T11:14:55Z",
+            "updated_at": "2019-07-21T11:14:56Z",
+            "keyword": "B2B Success",
+            "medium": "Blog",
+            "email_status": "Active",
+            "last_contacted_mode": "Email Opened",
+            "recent_note": "Had a call with James. Requested the proposal document and pricing quote asap.",
+            "last_contacted_via_chat": null,
+            "won_deals_count": 1,
+            "last_contacted_via_sales_activity": "2019-07-19T11:14:56Z",
+            "completed_sales_sequences": null,
+            "active_sales_sequences": null,
+            "web_form_ids": null,
+            "open_deals_count": 0,
+            "last_assigned_at": "2019-07-21T11:14:56Z",
+            "tags": [],
+            "is_deleted": false,
+            "facebook": "https://en-gb.facebook.com/people/James-Sampleton/100010618022475",
+            "twitter": "https://twitter.com/jamessampleton",
+            "linkedin": null,
+            "owner_id": 9000000532
+        }
+    ],
+    "meta": {
+        "total_pages": 1,
+        "total": 1
+    }
+}

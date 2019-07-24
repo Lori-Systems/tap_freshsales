@@ -272,6 +272,48 @@
               "string"
           ],
           "format": "date-time"
+      },
+      "users[id]": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "users[display_name]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "users[avatar]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "users[is_active]": {
+          "type": [
+              "null",
+              "boolean"
+          ]
+      },
+      "users[work_number]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "users[mobile_number]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "users[email]": {
+          "type": [
+              "null",
+              "integer"
+          ]
       }
   }
 }
