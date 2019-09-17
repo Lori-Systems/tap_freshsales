@@ -83,6 +83,8 @@ def gen_request(url, params=None):
     """
     params = params or {}
     params["per_page"] = PER_PAGE
+    params["sort"] = 'updated_at'
+    params["sort_type"] = 'desc'
     page = 1
     # TODO: Meta tag carries number of pages
     # Use generator to scan across all pages of output
