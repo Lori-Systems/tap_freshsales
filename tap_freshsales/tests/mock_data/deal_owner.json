@@ -1,0 +1,144 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "display_name": "Joshua Njoroge",
+            "email": "test@gmail.com",
+            "is_active": true,
+            "work_number": "19292586081",
+            "mobile_number": "+19292586081"
+        }
+    ],
+    "deals": [
+        {
+            "id": 1,
+            "name": "Gold plan (sample)",
+            "amount": "7000.0",
+            "base_currency_amount": "7000.0",
+            "expected_close": "2019-07-25",
+            "closed_date": "2019-07-18",
+            "stage_updated_time": "2019-07-17T15:52:54Z",
+            "custom_field": {},
+            "probability": 100,
+            "updated_at": "2019-07-18T15:52:54Z",
+            "created_at": "2019-07-13T15:52:53Z",
+            "deal_pipeline_id": 9000000050,
+            "deal_stage_id": 9000000349,
+            "age": 5,
+            "links": {
+                "conversations": "/deals/9000000052/conversations/all?include=email_conversation_recipients%2Ctargetable%2Cphone_number%2Cphone_caller%2Cnote%2Cuser\u0026per_page=3",
+                "document_associations": "/deals/9000000052/document_associations",
+                "notes": "/deals/9000000052/notes?include=creater",
+                "tasks": "/deals/9000000052/tasks?include=creater,owner,updater,targetable,users,task_type",
+                "appointments": "/deals/9000000052/appointments?include=creater,owner,updater,targetable,appointment_attendees"
+            },
+            "recent_note": null,
+            "completed_sales_sequences": null,
+            "active_sales_sequences": null,
+            "web_form_id": null,
+            "upcoming_activities_time": null,
+            "collaboration": {
+                "id": "9000000052",
+                "title": "Gold plan (sample)",
+                "convo_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJDb252b0lkIjoiOTAwMDAwMDA1MiIsIlVzZXJVVUlEIjoiM2U2N2I4NjItNzc5NS1jNGU1LWIyYzQtMWViYmUyYTVhM2VjIiwiZXhwIjoxNTYzNzEyMzkxfQ.U-O0ahiAsdeNytj5D8hCTSpXn9nL3aGJih3UE-YKIUg"
+            },
+            "last_assigned_at": "2019-07-13T15:52:53Z",
+            "tags": [],
+            "last_contacted_sales_activity_mode": null,
+            "last_contacted_via_sales_activity": null,
+            "expected_deal_value": "7000.0",
+            "deal_freddy_metrics": null,
+            "is_deleted": false,
+            "rotten_days": null,
+            "owner_id": 1
+        },
+        {
+            "id": 9000000566,
+            "name": "test_deal",
+            "amount": "100.0",
+            "base_currency_amount": "100.0",
+            "expected_close": "2019-07-23",
+            "closed_date": null,
+            "stage_updated_time": "2019-07-21T09:56:02Z",
+            "custom_field": {},
+            "probability": 100,
+            "updated_at": "2019-07-21T09:56:02Z",
+            "created_at": "2019-07-21T09:56:02Z",
+            "deal_pipeline_id": 9000000050,
+            "deal_stage_id": 9000000344,
+            "age": 0,
+            "links": {
+                "conversations": "/deals/9000000566/conversations/all?include=email_conversation_recipients%2Ctargetable%2Cphone_number%2Cphone_caller%2Cnote%2Cuser\u0026per_page=3",
+                "document_associations": "/deals/9000000566/document_associations",
+                "notes": "/deals/9000000566/notes?include=creater",
+                "tasks": "/deals/9000000566/tasks?include=creater,owner,updater,targetable,users,task_type",
+                "appointments": "/deals/9000000566/appointments?include=creater,owner,updater,targetable,appointment_attendees"
+            },
+            "recent_note": null,
+            "completed_sales_sequences": null,
+            "active_sales_sequences": null,
+            "web_form_id": null,
+            "upcoming_activities_time": null,
+            "collaboration": {
+                "id": "9000000566",
+                "title": "test_deal",
+                "convo_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJDb252b0lkIjoiOTAwMDAwMDU2NiIsIlVzZXJVVUlEIjoiM2U2N2I4NjItNzc5NS1jNGU1LWIyYzQtMWViYmUyYTVhM2VjIiwiZXhwIjoxNTYzNzEyMzkxfQ.mAqk7wJ0xMheX6heSzNyfqxbOo5PWJpwnd-6On1Ud04"
+            },
+            "last_assigned_at": "2019-07-21T09:56:03Z",
+            "tags": [],
+            "last_contacted_sales_activity_mode": null,
+            "last_contacted_via_sales_activity": null,
+            "expected_deal_value": "100.0",
+            "deal_freddy_metrics": null,
+            "is_deleted": false,
+            "rotten_days": null,
+            "owner_id": 1
+        },
+        {
+            "id": 9000000567,
+            "name": "test_deal1",
+            "amount": "0.0",
+            "base_currency_amount": "0.0",
+            "expected_close": null,
+            "closed_date": null,
+            "stage_updated_time": "2019-07-21T09:57:36Z",
+            "custom_field": {},
+            "probability": 100,
+            "updated_at": "2019-07-21T09:57:36Z",
+            "created_at": "2019-07-21T09:57:36Z",
+            "deal_pipeline_id": 9000000050,
+            "deal_stage_id": 9000000344,
+            "age": 0,
+            "links": {
+                "conversations": "/deals/9000000567/conversations/all?include=email_conversation_recipients%2Ctargetable%2Cphone_number%2Cphone_caller%2Cnote%2Cuser\u0026per_page=3",
+                "document_associations": "/deals/9000000567/document_associations",
+                "notes": "/deals/9000000567/notes?include=creater",
+                "tasks": "/deals/9000000567/tasks?include=creater,owner,updater,targetable,users,task_type",
+                "appointments": "/deals/9000000567/appointments?include=creater,owner,updater,targetable,appointment_attendees"
+            },
+            "recent_note": null,
+            "completed_sales_sequences": null,
+            "active_sales_sequences": null,
+            "web_form_id": null,
+            "upcoming_activities_time": null,
+            "collaboration": {
+                "id": "9000000567",
+                "title": "test_deal1",
+                "convo_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJDb252b0lkIjoiOTAwMDAwMDU2NyIsIlVzZXJVVUlEIjoiM2U2N2I4NjItNzc5NS1jNGU1LWIyYzQtMWViYmUyYTVhM2VjIiwiZXhwIjoxNTYzNzEyMzkxfQ.dzh8Mo0vJoyv8CTvPLRqcKcd515GS18Ed-YK07jGwJE"
+            },
+            "last_assigned_at": "2019-07-21T09:57:37Z",
+            "tags": [],
+            "last_contacted_sales_activity_mode": null,
+            "last_contacted_via_sales_activity": null,
+            "expected_deal_value": "0.0",
+            "deal_freddy_metrics": null,
+            "is_deleted": false,
+            "rotten_days": null,
+            "owner_id": 1
+        }
+    ],
+    "meta": {
+        "total_pages": 1,
+        "total": 3
+    }
+}

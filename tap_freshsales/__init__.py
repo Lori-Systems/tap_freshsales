@@ -229,6 +229,21 @@ def sync_accounts_by_filter(bookmark_prop, fil):
             singer.write_record(
                 "accounts", acc, time_extracted=singer.utils.now())
 
+def sync_accounts_owner(bookmark_prop,fil):
+    """
+    Sync accounts owners
+    """
+    endpoint = 'accounts'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    accounts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
+
+    for account in accounts:
+        if account[bookmark_prop] is True:
+            LOGGER.info("Account {}: Syncing details".format(account['id']))
+            singer.write_record(
+                "Accounts", account, time_extracted=singer.utils.now())
+
 
 def sync_contacts():
     """
@@ -268,6 +283,22 @@ def sync_contacts_by_filter(bookmark_prop, fil):
 
 # Batch sync deals and stages of deals
 
+def sync_contacts_owner(bookmark_prop,fil):
+    """
+    Sync contacts owners for a specific deal
+    """
+    endpoint = 'contacts'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    contacts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
+
+    for contact in contacts:
+        if contact[bookmark_prop] is True:
+            LOGGER.info("Contact {}: Syncing details".format(contact['id']))
+            singer.write_record(
+                "Contacts", contact, time_extracted=singer.utils.now())
+
+# Batch contacts and owner info
 
 def sync_deals():
     """
@@ -307,6 +338,20 @@ def sync_deals_by_filter(bookmark_prop, fil):
 
 # Sync leads across all filters
 
+def sync_deals_owner(bookmark_prop,fil):
+    """
+    Sync deals owners for a specific deal
+    """
+    endpoint = 'deals'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    deals = gen_request(get_url(endpoint, query='view/'+ str(fil_id)+ '?include=owner'))
+
+    for deal in deals:
+        if deal[bookmark_prop] is True:
+            LOGGER.info("Deal {}: Syncing details".format(deal['id']))
+            singer.write_record(
+                "Deals", deal, time_extracted=singer.utils.now())
 
 def sync_leads():
     """
@@ -324,6 +369,22 @@ def sync_leads():
 
 # Fetch leads for a particular filter for sync
 
+def sync_leads_owner(bookmark_prop,fil):
+    """
+    Sync leads owners for a specific lead
+    """
+    endpoint = 'leads'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    leads = gen_request(get_url(endpoint, query=str(fil_id)+ '?include=owner'))
+    # leads = gen_request(get_url(endpoint, query='1?include=owner'))
+    for lead in leads:
+        if lead[bookmark_prop] is True:
+            LOGGER.info("Lead {}: Syncing details".format(lead['id']))
+            singer.write_record(
+                "Leads", lead, time_extracted=singer.utils.now())
+
+# Fetch a particular lead  owner
 
 def sync_leads_by_filter(bookmark_prop, fil):
     """
