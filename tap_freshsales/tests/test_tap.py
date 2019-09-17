@@ -40,6 +40,34 @@ def test_sync_contacts_by_filter():
     assert len(responses.calls) == 1
 
 
+def test_sync_contacts_by_filter():
+    """
+    Test sync of contacts, inject data via responses
+    """
+    assert sync_contacts_by_filter(None,None)
+
+
+@responses.activate
+def test_sync_contacts_owner():
+    """
+    Test sync of contacts owner, inject data via responses
+    """
+    contact_data = json.load(
+        open(os.path.join(pytest.TEST_DIR, 'mock_data/contacts_owner.json')))
+    contact_url = 'https://{}.freshsales.io/api/contacts/1?include=owner&per_page=100&page=1'.format(
+        pytest.TEST_DOMAIN)
+    responses.add(responses.GET, contact_url,
+                  json=contact_data, status=200, content_type='application/json')
+    assert sync_contacts_owner('is_active',{'id': 1}) is None
+    assert len(responses.calls) == 1
+    
+def test_sync_contacts_owner():
+    """
+    Test sync of deal owner, inject data via responses
+    """
+    assert test_sync_contacts_owner(None,None)
+
+
 @responses.activate
 def test_sync_contacts_owner():
     """

@@ -211,7 +211,6 @@ def sync_accounts():
 
 # Batch sync accounts while bookmarking updated at
 
-
 def sync_accounts_by_filter(bookmark_prop, fil):
     """
     Sync accounts by view based filters, use bookmark property
@@ -237,7 +236,7 @@ def sync_accounts_owner(bookmark_prop,fil):
     fil_id = fil['id']
     # TODO: Verify that is_active is true for the owner
     accounts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
-
+    
     for account in accounts:
         if account[bookmark_prop] is True:
             LOGGER.info("Account {}: Syncing details".format(account['id']))
@@ -300,6 +299,23 @@ def sync_contacts_owner(bookmark_prop,fil):
 
 # Batch contacts and owner info
 
+def sync_contacts_owner(bookmark_prop,fil):
+    """
+    Sync contacts owners for a specific deal
+    """
+    endpoint = 'contacts'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    contacts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
+    
+    for contact in contacts:
+        if contact[bookmark_prop] is True:
+            LOGGER.info("Contact {}: Syncing details".format(contact['id']))
+            singer.write_record(
+                "Contacts", contact, time_extracted=singer.utils.now())
+
+# Batch contacts and owner info
+
 def sync_deals():
     """
     Sync deals for every view
@@ -346,7 +362,7 @@ def sync_deals_owner(bookmark_prop,fil):
     fil_id = fil['id']
     # TODO: Verify that is_active is true for the owner
     deals = gen_request(get_url(endpoint, query='view/'+ str(fil_id)+ '?include=owner'))
-
+    
     for deal in deals:
         if deal[bookmark_prop] is True:
             LOGGER.info("Deal {}: Syncing details".format(deal['id']))
