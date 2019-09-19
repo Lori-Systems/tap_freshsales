@@ -212,9 +212,10 @@ def sync_accounts():
     filters = get_filters(endpoint)
     for fil in filters:
         sync_accounts_by_filter(bookmark_property, fil)
+        sync_accounts_owner(bookmark_prop,fil)
+
 
 # Batch sync accounts while bookmarking updated at
-
 def sync_accounts_by_filter(bookmark_prop, fil):
     """
     Sync accounts by view based filters, use bookmark property
@@ -239,6 +240,7 @@ def sync_accounts_by_filter(bookmark_prop, fil):
             singer.write_record(
                 "accounts", acc, time_extracted=singer.utils.now())
 
+
 def sync_accounts_owner(bookmark_prop,fil):
     """
     Sync accounts owners
@@ -255,6 +257,7 @@ def sync_accounts_owner(bookmark_prop,fil):
                 "Accounts", account, time_extracted=singer.utils.now())
 
 
+# Batch sync contacts while bookmarking updated at
 def sync_contacts():
     """
     Sync Sales Accounts Data, Standard schema is kept as columns,
@@ -270,10 +273,9 @@ def sync_contacts():
     filters = get_filters(endpoint)
     for fil in filters:
         sync_contacts_by_filter(bookmark_property, fil)
+        sync_contacts_owner(bookmark_prop,fil)
 
-# Batch sync contacts while bookmarking updated at
-
-
+# Batch sync contacts
 def sync_contacts_by_filter(bookmark_prop, fil):
     """
     Sync all contacts updated after bookmark time
@@ -298,8 +300,7 @@ def sync_contacts_by_filter(bookmark_prop, fil):
                 endpoint, con, time_extracted=singer.utils.now())
             singer.write_state(STATE)
 
-# Batch sync contacts onwers
-
+# Batch sync contacts owners
 def sync_contacts_owner(bookmark_prop,fil):
     """
     Sync contacts owners for a specific deal
@@ -329,6 +330,7 @@ def sync_deals():
     filters = get_filters(endpoint)
     for fil in filters:
         sync_deals_by_filter(bookmark_property, fil)
+        sync_deals_owner(bookmark_prop,fil):
 
 # Batch sync deals with bookmarking on update time
 def sync_deals_by_filter(bookmark_prop, fil):
@@ -386,6 +388,7 @@ def sync_leads():
     filters = get_filters(endpoint, query=str(fil_id)+ '?include=owner&per_page=100&page=1')
     for fil in filters:
         sync_leads_by_filter(bookmark_property, fil)
+        sync_leads_by_filter(bookmark_prop, fil)
 
 # Fetch a particular lead  owner
 
