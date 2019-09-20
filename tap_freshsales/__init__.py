@@ -284,11 +284,11 @@ def sync_contacts_by_filter(bookmark_prop, fil):
     fil_id = fil['id']
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
-    contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id)+ '?per_page=100&sort=updated_at&sort_type=desc&page=1'))
+    contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for con in contacts:
         # convert updated_at(utc time) to datetime object 
         con_updated_at = datetime.strptime(con[bookmark_prop], "%Y-%m-%dT%H:%M:%SZ")
-
+        
         # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
         start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
         start_time -= timedelta(minutes=195)
@@ -308,7 +308,7 @@ def sync_contacts_owner(bookmark_prop,fil):
     endpoint = 'contacts'
     fil_id = fil['id']
     # TODO: Verify that is_active is true for the owner
-    contacts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner&per_page=100&page=1'))
+    contacts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
 
     for contact in contacts:
         if contact[bookmark_prop] is True:
@@ -330,7 +330,7 @@ def sync_deals():
     filters = get_filters(endpoint)
     for fil in filters:
         sync_deals_by_filter(bookmark_property, fil)
-        sync_deals_owner(bookmark_prop,fil):
+        sync_deals_owner(bookmark_prop,fil)
 
 # Batch sync deals with bookmarking on update time
 def sync_deals_by_filter(bookmark_prop, fil):

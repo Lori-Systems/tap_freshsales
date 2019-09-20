@@ -32,14 +32,13 @@ def test_sync_contacts_by_filter():
     """
     contact_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/contacts.json')))
-    contact_url = 'https://{}.freshsales.io/api/contacts/view/5000440489?include=owner&per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
+    contact_url = 'https://{}.freshsales.io/api/contacts/view/5000440489'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, contact_url,
                   json=contact_data, status=200, content_type='application/json')
     
-    # assert sync_contacts_by_filter('updated_at', {'id': 5000031046}) is None
-    # assert len(responses.calls) == 1
-    pass
+    assert sync_contacts_by_filter('updated_at', {'id': 5000440489}) is None
+    assert len(responses.calls) == 1
 
 
 # @responses.activate
@@ -49,7 +48,7 @@ def test_sync_contacts_owner():
     """
     contact_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/contacts_owner.json')))
-    contact_url = 'https://{}.freshsales.io/api/contacts/5005386510?include=owner&per_page=100&page=1'.format(
+    contact_url = 'https://{}.freshsales.io/api/contacts/5005386510?include=owner'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, contact_url,
                   json=contact_data, status=200, content_type='application/json')

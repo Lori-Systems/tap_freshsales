@@ -1,14 +1,4 @@
 {
-    "users": [
-        {
-            "id": 5000031046,
-            "display_name": "Joshua kagenyi njoroge",
-            "email": "joshua.kagenyi@lorisystems.com",
-            "is_active": true,
-            "work_number": "+254728588333",
-            "mobile_number": "+254728588333"
-        }
-    ],
     "contacts": [
         {
             "id": 5005390567,
@@ -79,8 +69,7 @@
             "twitter": null,
             "linkedin": null,
             "is_deleted": false,
-            "team_user_ids": null,
-            "owner_id": 5000031046
+            "team_user_ids": null
         },
         {
             "id": 5005386510,
@@ -151,8 +140,7 @@
             "twitter": null,
             "linkedin": null,
             "is_deleted": false,
-            "team_user_ids": null,
-            "owner_id": 5000031046
+            "team_user_ids": null
         }
     ],
     "meta": {
