@@ -211,7 +211,6 @@ def sync_accounts():
     filters = get_filters(endpoint)
     for fil in filters:
         sync_accounts_by_filter(bookmark_property, fil)
-        sync_accounts_owner(bookmark_prop,fil)
 
 
 # Batch sync accounts while bookmarking updated at
@@ -231,13 +230,15 @@ def sync_accounts_by_filter(bookmark_prop, fil):
 
         # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
         start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
-        # start_time -= timedelta(minutes=195)
+        start_time -= timedelta(minutes=180)
 
         if acc_updated_at >= start_time:
             LOGGER.info("Account {}: Syncing details".format(acc['id']))
             acc['custom_field'] = json.dumps(acc['custom_field'])
             singer.write_record(
                 "accounts", acc, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, acc[bookmark_prop])
+            singer.write_state(STATE)
 
 
 def sync_accounts_owner(bookmark_prop,fil):
@@ -272,7 +273,6 @@ def sync_contacts():
     filters = get_filters(endpoint)
     for fil in filters:
         sync_contacts_by_filter(bookmark_property, fil)
-        sync_contacts_owner(bookmark_prop,fil)
 
 # Batch sync contacts
 def sync_contacts_by_filter(bookmark_prop, fil):
@@ -290,13 +290,13 @@ def sync_contacts_by_filter(bookmark_prop, fil):
         
         # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
         start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
-        start_time -= timedelta(minutes=195)
+        start_time -= timedelta(minutes=180)
 
         if con_updated_at >= start_time:
             LOGGER.info("Contact {}: Syncing details".format(con['id']))
-            tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
             singer.write_record(
                 endpoint, con, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
             singer.write_state(STATE)
 
 # Batch sync contacts owners
@@ -322,14 +322,14 @@ def sync_deals():
     """
     bookmark_property = 'updated_at'
     endpoint = 'deals'
+    schema = tap_utils.load_schema(endpoint)
     singer.write_schema(endpoint,
-                        tap_utils.load_schema(endpoint),
+                        schema,
                         ["id"],
                         bookmark_properties=[bookmark_property])
     filters = get_filters(endpoint)
     for fil in filters:
         sync_deals_by_filter(bookmark_property, fil)
-        sync_deals_owner(bookmark_prop,fil)
 
 # Batch sync deals with bookmarking on update time
 def sync_deals_by_filter(bookmark_prop, fil):
@@ -342,14 +342,13 @@ def sync_deals_by_filter(bookmark_prop, fil):
     start = get_start(state_entity)
     deals = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for deal in deals:
-        # import pdb; pdb.set_trace()
         # convert updated_at(utc time) to datetime object 
         deal_updated_at = datetime.strptime(deal[bookmark_prop], "%Y-%m-%dT%H:%M:%SZ")
 
         # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
         start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
-        start_time -= timedelta(minutes=195)
-
+        start_time -= timedelta(minutes=180)
+    
         if deal_updated_at >= start_time:
             # get all sub-entities and save them
             deal['amount'] = float(deal['amount'])  # cast amount to float
@@ -358,6 +357,8 @@ def sync_deals_by_filter(bookmark_prop, fil):
             LOGGER.info("Deal {}: Syncing details".format(deal['id']))
             singer.write_record(
                 "deals", deal, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, deal[bookmark_prop])
+            singer.write_state(STATE)
 
 
 # Sync lead owners 
@@ -374,6 +375,8 @@ def sync_deals_owner(bookmark_prop,fil):
             LOGGER.info("Deal {}: Syncing details".format(deal['id']))
             singer.write_record(
                 "Deals", deal, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, deal[bookmark_prop])
+            singer.write_state(STATE)
 
 def sync_leads():
     """
@@ -388,7 +391,6 @@ def sync_leads():
     filters = get_filters(endpoint, query=str(fil_id)+ '?')
     for fil in filters:
         sync_leads_by_filter(bookmark_property, fil)
-        sync_leads_by_filter(bookmark_prop, fil)
 
 # Fetch a particular lead  owner
 
@@ -424,12 +426,14 @@ def sync_leads_by_filter(bookmark_prop, fil):
 
         # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
         start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
-        start_time -= timedelta(minutes=195)
+        start_time -= timedelta(minutes=180)
 
         if lead_updated_at < start_time:
             LOGGER.info("Lead {}: Syncing details".format(lead['id']))
             singer.write_record(
                 "leads", lead, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, lead[bookmark_prop])
+            singer.write_state(STATE)
 
 
 # Fetch tasks stream
@@ -491,7 +495,6 @@ def sync_sales_activities():
 def sync_appointments():
     """Sync all appointments
     """
-
     endpoint = 'appointments'
     bookmark_property = 'updated_at'
     filters = ['past', 'upcoming']
@@ -503,8 +506,6 @@ def sync_appointments():
         sync_appointments_by_filter(bookmark_property, fil)
 
 # Fetch team appointments by filter
-
-
 def sync_appointments_by_filter(bookmark_property, fil):
     """Iterate over all appointment filter to sync
 
