@@ -20,6 +20,33 @@ This tap:
 - Outputs the schema for each resource
 - Pulls all data
 
+# Installation
+- Clone the app
+- Create virtual env `virtualenv test` then `source test/bin/activate`
+- Install dependencies i.e `pip install -r requirements.txt`
+- Run Tests `pytest tests`
+
+# How to run the tap
+- Create a config file from the `sample_config` already provided
+```
+{
+  "api_key": "your-api-token",
+  "domain": "subdomain",
+  "start_date": "2018-11-26T00:00:00Z"
+}
+```
+- Run the command below
+```
+python test/bin/tap_freshsales --config ../config.json >> ../state.json
+```
+- Where state.json - a file where the tap writes all data pulled from freshsales.
+If successful, state.json should have this format.
+![cropped 1](https://user-images.githubusercontent.com/8224798/65393181-25244180-dd86-11e9-8130-eaa6fd9e1021.png)
+
+  - STATE : `{ item_id: updated_at }` - Adds the bookmapping function where only sync if a record has been updated from previous sync.
+  - SCHEMA : Generated schema - automates the `Data insert ` process
+  - RECORD : Actual data for each record in json format.
+
 ---
 
 Copyright &copy; 2018 Lori
