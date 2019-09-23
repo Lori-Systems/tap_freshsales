@@ -228,6 +228,8 @@ def sync_accounts_by_filter(bookmark_prop, fil):
             acc['custom_field'] = json.dumps(acc['custom_field'])
             singer.write_record(
                 "accounts", acc, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, acc[bookmark_prop])
+            singer.write_state(STATE)
 
 
 def sync_contacts():
@@ -261,10 +263,11 @@ def sync_contacts_by_filter(bookmark_prop, fil):
     for con in contacts:
         if con[bookmark_prop] >= start:
             LOGGER.info("Contact {}: Syncing details".format(con['id']))
-            tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
             singer.write_record(
                 endpoint, con, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
             singer.write_state(STATE)
+            
 
 # Batch sync deals and stages of deals
 
@@ -304,6 +307,8 @@ def sync_deals_by_filter(bookmark_prop, fil):
             LOGGER.info("Deal {}: Syncing details".format(deal['id']))
             singer.write_record(
                 "deals", deal, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, deal[bookmark_prop])
+            singer.write_state(STATE)
 
 # Sync leads across all filters
 
@@ -340,6 +345,8 @@ def sync_leads_by_filter(bookmark_prop, fil):
             LOGGER.info("Lead {}: Syncing details".format(lead['id']))
             singer.write_record(
                 "leads", lead, time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, lead[bookmark_prop])
+            singer.write_state(STATE)
 
 # Fetch tasks stream
 
