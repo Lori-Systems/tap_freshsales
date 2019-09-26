@@ -298,6 +298,7 @@ def sync_contacts_by_filter(bookmark_prop, fil):
                 endpoint, con, time_extracted=singer.utils.now())
             tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
             singer.write_state(STATE)
+            
 
 # Batch sync contacts owners
 def sync_contacts_owner(bookmark_prop,fil):
@@ -523,6 +524,21 @@ def sync_appointments_by_filter(bookmark_property, fil):
         LOGGER.info("Appointment {}: Syncing details".format(appoint['id']))
         singer.write_record(endpoint, appoint,
                             time_extracted=singer.utils.now())
+
+
+# Fetch tasks stream
+def sync_owners():
+    """
+    Sync all task based on filters
+    """
+    endpoint = 'owners'
+    bookmark_property = 'updated_at'
+    singer.write_schema(endpoint,
+                        tap_utils.load_schema(endpoint),
+                        ["id"],
+                        bookmark_properties=[bookmark_property])
+    for fil in filters:
+        sync_tasks_by_filter(bookmark_property, fil)
 
 
 def sync(config, state, catalog):
