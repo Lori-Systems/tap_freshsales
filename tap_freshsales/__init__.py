@@ -11,7 +11,6 @@ import sys
 import time
 import backoff
 import requests
-from datetime import datetime, timedelta
 from requests.exceptions import HTTPError
 import singer
 from singer import utils, metadata
@@ -134,22 +133,44 @@ def discover():
     streams = []
 
     for schema_name, schema in raw_schemas.items():
-        mdata = metadata.new()
-        mdata = metadata.write(mdata, (), 'table-key-properties', ['id'])
-        mdata = metadata.write(mdata, ('properties', 'id'), 'inclusion', 'automatic')
-        mdata = metadata.write(mdata, (), 'valid-replication-keys', ['updated_at'])
-        mdata = metadata.write(mdata, ('properties', 'updated_at'), 'inclusion', 'automatic')
-        for field_name in schema['properties'].keys():
-            if field_name not in {'id', 'updated_at'}:
-                mdata = metadata.write(mdata, ('properties', field_name), 'inclusion', 'available')
+
+        # Default metadata templated on
+        # https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md
+        default_meta = {
+            "metadata": {
+                "inclusion": "available",
+                "table-key-properties": ["id"],
+                "selected": True,
+                "valid-replication-keys": ["updated_at"],
+                "schema-name": schema_name,
+            },
+            "breadcrumb": []
+        }
+        # Each stream uses id as the primary key
+        id_meta = {
+            "metadata": {
+                "inclusion": "automatic",
+            },
+            "breadcrumb": ["properties", "id"]
+        }
+        # Each stream has updated_at times
+        bookmark_meta = {
+            "metadata": {
+                "inclusion": "automatic",
+            },
+            "breadcrumb": ["properties", "updated_at"]
+        }
+
+        stream_metadata = [default_meta, id_meta, bookmark_meta]
+        stream_key_properties = []
 
         # create and add catalog entry
         catalog_entry = {
             'stream': schema_name,
             'tap_stream_id': schema_name,
             'schema': schema,
-            'metadata': metadata.to_list(mdata),
-            'key_properties': ['id']
+            'metadata': stream_metadata,
+            'key_properties': stream_key_properties
         }
         streams.append(catalog_entry)
 
@@ -163,6 +184,7 @@ def get_selected_streams(catalog):
     and mdata with a 'selected' entry
     """
     selected_streams = []
+    # TODO: Resolve why cookie-cutter uses arribute dict notation
     for stream in catalog['streams']:
         stream_metadata = metadata.to_map(stream['metadata'])
         # stream metadata will have an empty breadcrumb
@@ -211,10 +233,10 @@ def sync_accounts():
     filters = get_filters(endpoint)
     for fil in filters:
         sync_accounts_by_filter(bookmark_property, fil)
-        sync_accounts_owner(bookmark_prop,fil)
-
 
 # Batch sync accounts while bookmarking updated at
+
+
 def sync_accounts_by_filter(bookmark_prop, fil):
     """
     Sync accounts by view based filters, use bookmark property
@@ -226,58 +248,13 @@ def sync_accounts_by_filter(bookmark_prop, fil):
     start = get_start(state_entity)
     accounts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for acc in accounts:
-        # convert updated_at(utc time) to datetime object 
-        acc_updated_at = datetime.strptime(acc[bookmark_prop], "%Y-%m-%dT%H:%M:%SZ")
-
-        # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
-        start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
-        start_time -= timedelta(minutes=180)
-
-        if acc_updated_at >= start_time:
+        if acc[bookmark_prop] >= start:
             LOGGER.info("Account {}: Syncing details".format(acc['id']))
             acc['custom_field'] = json.dumps(acc['custom_field'])
             singer.write_record(
                 "accounts", acc, time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, acc[bookmark_prop])
-            singer.write_state(STATE)
-
-def sync_accounts_owners():
-    """
-    Sync Owners from accounts Data, Standard schema is kept as columns,
-    Custom fields are saved as JSON content
-    """
-    bookmark_property = 'id'
-    endpoint = 'accounts'
-    schema = tap_utils.load_schema('owners')
-    singer.write_schema(endpoint,
-                        schema,
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint)
-    for fil in filters:
-        sync_accounts_owner(bookmark_property, fil)
 
 
-def sync_accounts_owner(bookmark_prop,fil):
-    """
-    Sync accounts owners
-    """
-    endpoint = 'accounts'
-    fil_id = fil['id']
-    # TODO: Verify that is_active is true for the owner
-    accounts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
-    
-    for account in accounts:
-        state_entity = "owner" + "_" + str(account[bookmark_prop])
-        if not (state_entity in STATE):
-            LOGGER.info("Owner {}: Syncing details".format(account['id']))
-            singer.write_record(
-                "Owners", account, time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, account[bookmark_prop])
-            singer.write_state(STATE)
-
-
-# Batch sync contacts while bookmarking updated at
 def sync_contacts():
     """
     Sync Sales Accounts Data, Standard schema is kept as columns,
@@ -294,7 +271,9 @@ def sync_contacts():
     for fil in filters:
         sync_contacts_by_filter(bookmark_property, fil)
 
-# Batch sync contacts
+# Batch sync contacts while bookmarking updated at
+
+
 def sync_contacts_by_filter(bookmark_prop, fil):
     """
     Sync all contacts updated after bookmark time
@@ -305,56 +284,14 @@ def sync_contacts_by_filter(bookmark_prop, fil):
     start = get_start(state_entity)
     contacts = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for con in contacts:
-        # convert updated_at(utc time) to datetime object 
-        con_updated_at = datetime.strptime(con[bookmark_prop], "%Y-%m-%dT%H:%M:%SZ")
-        
-        # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
-        start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
-        start_time -= timedelta(minutes=180)
-
-        if con_updated_at >= start_time:
+        if con[bookmark_prop] >= start:
             LOGGER.info("Contact {}: Syncing details".format(con['id']))
+            tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
             singer.write_record(
                 endpoint, con, time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, con[bookmark_prop])
             singer.write_state(STATE)
 
-
-
-def sync_contacts_owners():
-    """
-    Sync Owners from contacts Data, Standard schema is kept as columns,
-    Custom fields are saved as JSON content
-    """
-    bookmark_property = 'id'
-    endpoint = 'contacts'
-    schema = tap_utils.load_schema('owners')
-    singer.write_schema(endpoint,
-                        schema,
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint)
-    for fil in filters:
-        sync_contacts_owner(bookmark_property, fil)
-
-# Batch sync contacts owners
-def sync_contacts_owner(bookmark_prop,fil):
-    """
-    Sync contacts owners for a specific deal
-    """
-    endpoint = 'contacts'
-    fil_id = fil['id']
-    # TODO: Verify that is_active is true for the owner
-    contacts = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
-    
-    for contact in contacts:
-        state_entity = "owner" + "_" + str(contact[bookmark_prop])
-        if not (state_entity in STATE):
-            LOGGER.info("Owner {}: Syncing details".format(contact['id']))
-            singer.write_record(
-                "Owners", contact, time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, contact[bookmark_prop])
-            singer.write_state(STATE)
+# Batch sync deals and stages of deals
 
 
 def sync_deals():
@@ -363,17 +300,17 @@ def sync_deals():
     """
     bookmark_property = 'updated_at'
     endpoint = 'deals'
-    schema = tap_utils.load_schema(endpoint)
     singer.write_schema(endpoint,
-                        schema,
+                        tap_utils.load_schema(endpoint),
                         ["id"],
                         bookmark_properties=[bookmark_property])
     filters = get_filters(endpoint)
     for fil in filters:
         sync_deals_by_filter(bookmark_property, fil)
-        sync_deals_owner(bookmark_prop,fil)
 
 # Batch sync deals with bookmarking on update time
+
+
 def sync_deals_by_filter(bookmark_prop, fil):
     """
     Iterate over all deal filter to sync all deal data
@@ -384,14 +321,7 @@ def sync_deals_by_filter(bookmark_prop, fil):
     start = get_start(state_entity)
     deals = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for deal in deals:
-        # convert updated_at(utc time) to datetime object 
-        deal_updated_at = datetime.strptime(deal[bookmark_prop], "%Y-%m-%dT%H:%M:%SZ")
-
-        # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
-        start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
-        start_time -= timedelta(minutes=180)
-    
-        if deal_updated_at >= start_time:
+        if deal[bookmark_prop] >= start:
             # get all sub-entities and save them
             deal['amount'] = float(deal['amount'])  # cast amount to float
             deal['custom_field'] = json.dumps(
@@ -399,45 +329,9 @@ def sync_deals_by_filter(bookmark_prop, fil):
             LOGGER.info("Deal {}: Syncing details".format(deal['id']))
             singer.write_record(
                 "deals", deal, time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, deal[bookmark_prop])
-            singer.write_state(STATE)
 
+# Sync leads across all filters
 
-
-def sync_deals_owners():
-    """
-    Sync Owners from deals Data, Standard schema is kept as columns,
-    Custom fields are saved as JSON content
-    """
-    bookmark_property = 'id'
-    endpoint = 'deals'
-    schema = tap_utils.load_schema('owners')
-    singer.write_schema(endpoint,
-                        schema,
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint)
-    for fil in filters:
-        sync_deals_owner(bookmark_property, fil)
-
-# Sync lead owners 
-def sync_deals_owner(bookmark_prop,fil):
-    """
-    Sync deals owners for a specific deal
-    """
-    endpoint = 'deals'
-    fil_id = fil['id']
-    # TODO: Verify that is_active is true for the owner
-    deals = gen_request(get_url(endpoint, query= str(fil_id)+ '?include=owner'))
-    for deal in deals:
-        state_entity = "owner" + "_" + str(deal[bookmark_prop])
-        # import pdb; pdb.set_trace()
-        if not (state_entity in STATE):
-            LOGGER.info("Owner {}: Syncing details".format(deal['id']))
-            singer.write_record(
-                "Owners", deal, time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, deal[bookmark_prop])
-            singer.write_state(STATE)
 
 def sync_leads():
     """
@@ -449,13 +343,13 @@ def sync_leads():
                         tap_utils.load_schema(endpoint),
                         ["id"],
                         bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint, query=str(fil_id)+ '?')
+    filters = get_filters(endpoint)
     for fil in filters:
         sync_leads_by_filter(bookmark_property, fil)
-        sync_leads_owner(bookmark_prop,fil)
 
-# Fetch a particular lead  owner
 # Fetch leads for a particular filter for sync
+
+
 def sync_leads_by_filter(bookmark_prop, fil):
     """
     Iterate over all leads in a filter and consume generator
@@ -467,58 +361,14 @@ def sync_leads_by_filter(bookmark_prop, fil):
     start = get_start(state_entity)
     leads = gen_request(get_url(endpoint, query='view/'+str(fil_id)))
     for lead in leads:
-        # convert updated_at(utc time) to datetime object 
-        lead_updated_at = datetime.strptime(lead[bookmark_prop], "%Y-%m-%dT%H:%M:%SZ")
-
-        # convert start time str to time object , then to utc time(-180min == -3hours) and give 15 minute delay 
-        start_time = datetime.strptime(start, '%Y-%m-%d %H:%M:%S.%f')
-        start_time -= timedelta(minutes=180)
-
-        if lead_updated_at < start_time:
+        if lead[bookmark_prop] >= start:
             LOGGER.info("Lead {}: Syncing details".format(lead['id']))
             singer.write_record(
                 "leads", lead, time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, lead[bookmark_prop])
-            singer.write_state(STATE)
-
-
-def sync_leads_owners():
-    """
-    Sync Owners from leads Data, Standard schema is kept as columns,
-    Custom fields are saved as JSON content
-    """
-    bookmark_property = 'id'
-    endpoint = 'leads'
-    schema = tap_utils.load_schema('owners')
-    singer.write_schema(endpoint,
-                        schema,
-                        ["id"],
-                        bookmark_properties=[bookmark_property])
-    filters = get_filters(endpoint)
-    for fil in filters:
-        sync_leads_owner(bookmark_property, fil)
-
-def sync_leads_owner(bookmark_prop,fil):
-    """
-    Sync leads owners for a specific lead
-    """
-    endpoint = 'leads'
-    fil_id = fil['id']
-    # TODO: Verify that is_active is true for the owner
-    leads = gen_request(get_url(endpoint, query=str(fil_id)+ '?include=owner'))
-    # leads = gen_request(get_url(endpoint, query='1?include=owner'))
-    for lead in leads:
-        state_entity = "owner" + "_" + str(lead[bookmark_prop])
-        if not (state_entity in STATE):
-            LOGGER.info("Owner {}: Syncing details".format(lead['id']))
-            singer.write_record(
-                "Owners", lead, time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, lead[bookmark_prop])
-            singer.write_state(STATE)
-
-
 
 # Fetch tasks stream
+
+
 def sync_tasks():
     """
     Sync all task based on filters
@@ -572,11 +422,13 @@ def sync_sales_activities():
             singer.write_record("sale_activities", sale,
                                 time_extracted=singer.utils.now())
 
-
 # Fetch all team appointments
+
+
 def sync_appointments():
     """Sync all appointments
     """
+
     endpoint = 'appointments'
     bookmark_property = 'updated_at'
     filters = ['past', 'upcoming']
@@ -588,6 +440,8 @@ def sync_appointments():
         sync_appointments_by_filter(bookmark_property, fil)
 
 # Fetch team appointments by filter
+
+
 def sync_appointments_by_filter(bookmark_property, fil):
     """Iterate over all appointment filter to sync
 
@@ -606,6 +460,155 @@ def sync_appointments_by_filter(bookmark_property, fil):
         singer.write_record(endpoint, appoint,
                             time_extracted=singer.utils.now())
 
+# Getting owners from other endpoints
+def sync_contacts_owners():
+    """
+    Sync Owners from contacts Data, Standard schema is kept as columns,
+    Custom fields are saved as JSON content
+    """
+    bookmark_property = 'id'
+    endpoint = 'contacts'
+    schema = tap_utils.load_schema('owners')
+    singer.write_schema('owners',
+                        schema, ["id"],
+                        bookmark_properties=[bookmark_property])
+    filters = get_filters(endpoint)
+    for fil in filters:
+        sync_contacts_owner(bookmark_property, fil)
+
+
+# Batch sync contacts owners
+def sync_contacts_owner(bookmark_prop, fil):
+    """
+    Sync contacts owners for a specific deal
+    """
+    endpoint = 'contacts'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    # import pdb; pdb.set_trace()
+    contacts = gen_request(
+        get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
+
+    for contact in contacts:
+        state_entity = "owner" + "_" + str(contact[bookmark_prop])
+        if not state_entity in STATE:
+            LOGGER.info("Owner {}: Syncing details".format(contact['id']))
+            singer.write_record("Owners",
+                                contact,
+                                time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, contact[bookmark_prop])
+            singer.write_state(STATE)
+
+
+def sync_accounts_owners():
+    """
+    Sync Owners from accounts Data, Standard schema is kept as columns,
+    Custom fields are saved as JSON content
+    """
+    bookmark_property = 'id'
+    endpoint = 'accounts'
+    schema = tap_utils.load_schema('owners')
+    singer.write_schema('owners',
+                        schema, ["id"],
+                        bookmark_properties=[bookmark_property])
+    filters = get_filters(endpoint)
+    for fil in filters:
+        sync_accounts_owner(bookmark_property, fil)
+
+
+def sync_accounts_owner(bookmark_prop, fil):
+    """
+    Sync accounts owners
+    """
+    endpoint = 'accounts'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    accounts = gen_request(
+        get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
+
+    for account in accounts:
+        state_entity = "owner" + "_" + str(account[bookmark_prop])
+        if not (state_entity in STATE):
+            LOGGER.info("Owner {}: Syncing details".format(account['id']))
+            singer.write_record("Owners",
+                                account,
+                                time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, account[bookmark_prop])
+            singer.write_state(STATE)
+
+
+def sync_deals_owners():
+    """
+    Sync Owners from deals Data, Standard schema is kept as columns,
+    Custom fields are saved as JSON content
+    """
+    bookmark_property = 'id'
+    endpoint = 'deals'
+    schema = tap_utils.load_schema('owners')
+    singer.write_schema('owners',
+                        schema, ["id"],
+                        bookmark_properties=[bookmark_property])
+    filters = get_filters(endpoint)
+    for fil in filters:
+        sync_deals_owner(bookmark_property, fil)
+
+
+# Sync lead owners
+def sync_deals_owner(bookmark_prop, fil):
+    """
+    Sync deals owners for a specific deal
+    """
+    endpoint = 'deals'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    deals = gen_request(
+        get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
+    for deal in deals:
+        state_entity = "owner" + "_" + str(deal[bookmark_prop])
+        if not (state_entity in STATE):
+            LOGGER.info("Owner {}: Syncing details".format(deal['id']))
+            singer.write_record("Owners",
+                                deal,
+                                time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, deal[bookmark_prop])
+            singer.write_state(STATE)
+
+
+def sync_leads_owners():
+    """
+    Sync Owners from leads Data, Standard schema is kept as columns,
+    Custom fields are saved as JSON content
+    """
+    bookmark_property = 'id'
+    endpoint = 'leads'
+    schema = tap_utils.load_schema('owners')
+    singer.write_schema('owners',
+                        schema, ["id"],
+                        bookmark_properties=[bookmark_property])
+    filters = get_filters(endpoint)
+    for fil in filters:
+        sync_leads_owner(bookmark_property, fil)
+
+
+def sync_leads_owner(bookmark_prop, fil):
+    """
+    Sync leads owners for a specific lead
+    """
+    endpoint = 'leads'
+    fil_id = fil['id']
+    # TODO: Verify that is_active is true for the owner
+    leads = gen_request(
+        get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
+    # leads = gen_request(get_url(endpoint, query='1?include=owner'))
+    for lead in leads:
+        state_entity = "owner" + "_" + str(lead[bookmark_prop])
+        if not (state_entity in STATE):
+            LOGGER.info("Owner {}: Syncing details".format(lead['id']))
+            singer.write_record("Owners",
+                                lead,
+                                time_extracted=singer.utils.now())
+            tap_utils.update_state(STATE, state_entity, lead[bookmark_prop])
+            singer.write_state(STATE)
 
 
 def sync(config, state, catalog):
@@ -623,25 +626,29 @@ def sync(config, state, catalog):
     # TODO: Use selected streams only
     # TODO: Use map based function compresenion to link fetch
     # function and stream name
+
     selected_streams = get_selected_streams(catalog)
     try:
+        if 'owners' in selected_streams:
+            sync_contacts_owners()
+            sync_accounts_owners()
+            sync_deals_owners()
+            sync_leads_owners()
         if 'contacts' in selected_streams:
             sync_contacts()
-            sync_contacts_owners()
         if 'appointments' in selected_streams:
             sync_appointments()
         if 'deals' in selected_streams:
             sync_deals()
-            sync_deals_owners()
         if 'sales_activities' in selected_streams:
             sync_sales_activities()
         if 'leads' in selected_streams:
             sync_leads()
-            sync_leads_owners
         if 'accounts' in selected_streams:
             sync_accounts()
         if 'tasks' in selected_streams:
             sync_tasks()
+
     except HTTPError as e:
         LOGGER.critical(
             "Error making request to FreshSales API: GET %s: [%s - %s]",
@@ -663,13 +670,11 @@ def main():
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
         catalog = discover()
-        catalog_string = json.dumps(catalog, indent=2)
-        #LOGGER.info(catalog_string)
-        print(catalog_string)
+        LOGGER.info(json.dumps(catalog, indent=2))
     # Otherwise run in sync mode
     else:
         if args.catalog:
-            catalog = args.catalog.to_dict()
+            catalog = args.catalog
         else:
             catalog = discover()
 

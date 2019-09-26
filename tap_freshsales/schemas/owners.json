@@ -7,18 +7,6 @@
               "integer"
           ]
       },
-      "first_name": {
-          "type": [
-              "null",
-              "string"
-          ]
-      },
-      "last_name": {
-          "type": [
-              "null",
-              "string"
-          ]
-      },
       "email": {
           "type": [
               "null",
