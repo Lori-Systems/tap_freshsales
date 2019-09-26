@@ -1,0 +1,47 @@
+{
+    "type": "object",
+    "properties": {
+      "id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "first_name": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "last_name": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "email": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "work_number": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "mobile_number": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "is_active": {
+          "type": [
+              "null",
+              "string"
+          ]
+      }
+    }
+}
