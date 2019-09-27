@@ -13,6 +13,18 @@
               "string"
           ]
       },
+      "avatar": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+      "display_name": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
       "work_number": {
           "type": [
               "null",
@@ -28,7 +40,7 @@
       "is_active": {
           "type": [
               "null",
-              "string"
+              "boolean"
           ]
       }
     }

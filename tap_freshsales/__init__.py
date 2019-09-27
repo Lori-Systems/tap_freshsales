@@ -489,12 +489,12 @@ def sync_contacts_owner(bookmark_prop, fil):
 
     for contact in contacts:
         state_entity = "owner" + "_" + str(contact[bookmark_prop])
-        if not state_entity in STATE:
+        if state_entity :
             LOGGER.info("Owner {}: Syncing details".format(contact['id']))
-            singer.write_record("Owners",
+            singer.write_record("owners",
                                 contact,
                                 time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, contact[bookmark_prop])
+            tap_utils.update_state(STATE, state_entity, contact["is_active"])
             singer.write_state(STATE)
 
 
@@ -525,12 +525,12 @@ def sync_accounts_owner(bookmark_prop, fil):
 
     for account in accounts:
         state_entity = "owner" + "_" + str(account[bookmark_prop])
-        if not (state_entity in STATE):
+        if state_entity not in STATE :
             LOGGER.info("owner {}: Syncing details".format(account['id']))
-            singer.write_record("Owners",
+            singer.write_record("owners",
                                 account,
                                 time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, account[bookmark_prop])
+            tap_utils.update_state(STATE, state_entity, account["is_active"])
             singer.write_state(STATE)
 
 
@@ -561,12 +561,12 @@ def sync_deals_owner(bookmark_prop, fil):
         get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
     for deal in deals:
         state_entity = "owner" + "_" + str(deal[bookmark_prop])
-        if not (state_entity in STATE):
+        if state_entity not in STATE  :
             LOGGER.info("owner {}: Syncing details".format(deal['id']))
-            singer.write_record("Owners",
+            singer.write_record("owners",
                                 deal,
                                 time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, deal[bookmark_prop])
+            tap_utils.update_state(STATE, state_entity, deal["is_active"])
             singer.write_state(STATE)
 
 
@@ -596,12 +596,12 @@ def sync_leads_owner(bookmark_prop, fil):
         get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
     for lead in leads:
         state_entity = "owner" + "_" + str(lead[bookmark_prop])
-        if not (state_entity in STATE):
+        if state_entity not in STATE  :
             LOGGER.info("owner {}: Syncing details".format(lead['id']))
-            singer.write_record("Owners",
+            singer.write_record("owners",
                                 lead,
                                 time_extracted=singer.utils.now())
-            tap_utils.update_state(STATE, state_entity, lead[bookmark_prop])
+            tap_utils.update_state(STATE, state_entity, lead["is_active"])
             singer.write_state(STATE)
 
 
