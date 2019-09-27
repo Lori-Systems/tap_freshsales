@@ -40,19 +40,20 @@ def test_sync_contacts_by_filter():
     assert len(responses.calls) == 1
 
 
-# @responses.activate
+@responses.activate
 def test_sync_contacts_owner():
     """
     Test sync of contacts owner, inject data via responses
     """
     contact_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/contacts_owner.json')))
-    contact_url = 'https://{}.freshsales.io/api/contacts/5005386510?include=owner'.format(
+    contact_url = 'https://{}.freshsales.io/api/contacts/view/5005386510?include=owner&per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
         pytest.TEST_DOMAIN)
+    # import pdb; pdb.set_trace()
     responses.add(responses.GET, contact_url,
                   json=contact_data, status=200, content_type='application/json')
     assert sync_contacts_owner('id',{'id': 5005386510}) is None
-    # assert len(responses.calls) == 1
+    assert len(responses.calls) == 1
 
 
 @responses.activate
@@ -70,20 +71,20 @@ def test_sync_deals_by_filter():
     assert len(responses.calls) == 1
  
 
-# @responses.activate
+@responses.activate
 def test_sync_deals_owner():
     """
     Test sync of leads owner, inject data via responses
     """
     deal_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/deal_owner.json')))
-    deal_url = 'https://{}.freshsales.io/api/deals/5001264008?include=owner'.format(
+    deal_url = 'https://{}.freshsales.io/api/deals/view/5001264008?include=owner&per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, deal_url,
                   json=deal_data, status=200, content_type='application/json')
 
     assert sync_deals_owner('id',{'id': 5001264008}) is None
-    # assert len(responses.calls) == 1
+    assert len(responses.calls) == 1
 
 
 @responses.activate
@@ -100,19 +101,19 @@ def test_sync_tasks_by_filter():
     assert sync_tasks_by_filter('updated_at', 'open') is None
     # assert len(responses.calls) == 1
 
-# @responses.activate
+@responses.activate
 def test_sync_leads_owner():
     """
     Test sync of leads owner, inject data via responses
     """
     lead_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/leads.json')))
-    lead_url = 'https://{}.freshsales.io/api/leads/5016404979?include=owner'.format(
+    lead_url = 'https://{}.freshsales.io/api/leads/view/5016404979?include=owner&per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, lead_url,
                   json=lead_data, status=200, content_type='application/json')
     assert sync_leads_owner('is_active',{'id': 5016404979}) is None
-    # assert len(responses.calls) == 1
+    assert len(responses.calls) == 1
 
 
 @responses.activate
@@ -130,14 +131,14 @@ def test_sync_accounts_by_filter():
     assert len(responses.calls) == 1
 
 
-# @responses.activate
+@responses.activate
 def test_sync_accounts_owner():
     """
     Test sync of accounts owner, inject data via responses
     """
     sales_account_owner_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/sales_accounts_owner.json')))
-    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/5001687794?include=owner'.format(
+    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/view/5001687794?include=owner&per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, sales_account_url,
                   json=sales_account_owner_data, status=200, content_type='application/json')

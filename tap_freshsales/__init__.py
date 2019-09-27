@@ -484,8 +484,6 @@ def sync_contacts_owner(bookmark_prop, fil):
     """
     endpoint = 'contacts'
     fil_id = fil['id']
-    # TODO: Verify that is_active is true for the owner
-    # import pdb; pdb.set_trace()
     contacts = gen_request(
         get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
 
@@ -522,14 +520,13 @@ def sync_accounts_owner(bookmark_prop, fil):
     """
     endpoint = 'accounts'
     fil_id = fil['id']
-    # TODO: Verify that is_active is true for the owner
     accounts = gen_request(
         get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
 
     for account in accounts:
         state_entity = "owner" + "_" + str(account[bookmark_prop])
         if not (state_entity in STATE):
-            LOGGER.info("Owner {}: Syncing details".format(account['id']))
+            LOGGER.info("owner {}: Syncing details".format(account['id']))
             singer.write_record("Owners",
                                 account,
                                 time_extracted=singer.utils.now())
@@ -560,13 +557,12 @@ def sync_deals_owner(bookmark_prop, fil):
     """
     endpoint = 'deals'
     fil_id = fil['id']
-    # TODO: Verify that is_active is true for the owner
     deals = gen_request(
         get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
     for deal in deals:
         state_entity = "owner" + "_" + str(deal[bookmark_prop])
         if not (state_entity in STATE):
-            LOGGER.info("Owner {}: Syncing details".format(deal['id']))
+            LOGGER.info("owner {}: Syncing details".format(deal['id']))
             singer.write_record("Owners",
                                 deal,
                                 time_extracted=singer.utils.now())
@@ -596,14 +592,12 @@ def sync_leads_owner(bookmark_prop, fil):
     """
     endpoint = 'leads'
     fil_id = fil['id']
-    # TODO: Verify that is_active is true for the owner
     leads = gen_request(
         get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
-    # leads = gen_request(get_url(endpoint, query='1?include=owner'))
     for lead in leads:
         state_entity = "owner" + "_" + str(lead[bookmark_prop])
         if not (state_entity in STATE):
-            LOGGER.info("Owner {}: Syncing details".format(lead['id']))
+            LOGGER.info("owner {}: Syncing details".format(lead['id']))
             singer.write_record("Owners",
                                 lead,
                                 time_extracted=singer.utils.now())
