@@ -2,18 +2,18 @@
     "users": [
         {
             "id": 5000031046,
-            "display_name": "Joshua kagenyi njoroge",
-            "email": "joshua.kagenyi@lorisystems.com",
+            "display_name": "Jo oge",
+            "email": "name@name.com",
             "is_active": true,
-            "work_number": "+254728588333",
-            "mobile_number": "+254728588333"
+            "work_number": "+25472000000",
+            "mobile_number": "+25472000000"
         }
     ],
     "contact": {
         "id": 5005386510,
-        "first_name": "test joshua",
+        "first_name": "test jo",
         "last_name": "test1",
-        "display_name": "test joshua test1",
+        "display_name": "test jo test1",
         "avatar": null,
         "job_title": null,
         "city": null,
