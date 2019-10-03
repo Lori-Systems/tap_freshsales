@@ -75,7 +75,7 @@ def test_owners():
     """
     Test sync of owners from other deals
     """
-    assert(len(owners)) == 0
+    assert(len(owners)) == 1
 
 def test_tap_discover():
     """
