@@ -47,6 +47,21 @@ If successful, state.json should have this format.
   - SCHEMA : Generated schema - automates the `Data insert ` process
   - RECORD : Actual data for each record in json format.
 
+# Running tapo to Postgres Database
+- To push data from tap_freshsale to postgres db using the target-postgres
+- Add db_config 
+```
+{
+
+    "host": "localhost",
+    "port": 5432,
+    "dbname": "local freshsales db",
+    "user": "db user",
+    "password": "db password",
+    "schema": "tap_freshsales"
+  }
+```
+- Run this command `python your_virtual_env/bin/tap_freshsales --config ../config.json | your_virtual_env/bin/target-postgres  -c ../db_config.json`
 ---
 
 Copyright &copy; 2018 Lori
