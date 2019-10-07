@@ -6,10 +6,10 @@ import json
 import os
 import responses
 import pytest
-from tap_freshsales import discover, sync_contacts_by_filter
-from tap_freshsales import sync_accounts_by_filter
-from tap_freshsales import sync_deals_by_filter
-from tap_freshsales import sync_tasks_by_filter
+from tap_freshsales import discover, sync_contacts_by_filter, owners
+from tap_freshsales import sync_accounts_by_filter, sync_appointments_by_filter
+from tap_freshsales import sync_deals_by_filter, sync_leads_by_filter
+from tap_freshsales import sync_sales_activities, sync_tasks_by_filter
 from tap_freshsales import load_schemas, get_start
 
 
@@ -32,11 +32,11 @@ def test_sync_contacts_by_filter():
     """
     contact_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/contacts.json')))
-    contact_url = 'https://{}.freshsales.io/api/contacts/view/1?per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
+    contact_url = 'https://{}.freshsales.io/api/contacts/view/5000440489'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, contact_url,
                   json=contact_data, status=200, content_type='application/json')
-    assert sync_contacts_by_filter('updated_at', {'id': 1}) is None
+    assert sync_contacts_by_filter('updated_at', {'id': 5000440489}) is None
     assert len(responses.calls) == 1
 
 
@@ -47,11 +47,11 @@ def test_sync_deals_by_filter():
     """
     deal_data = json.load(
         open(os.path.join(pytest.TEST_DIR, 'mock_data/deals.json')))
-    deal_url = 'https://{}.freshsales.io/api/deals/view/1?per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
+    deal_url = 'https://{}.freshsales.io/api/deals/view/5000440502'.format(
         pytest.TEST_DOMAIN)
     responses.add(responses.GET, deal_url,
                   json=deal_data, status=200, content_type='application/json')
-    assert sync_deals_by_filter('updated_at', {'id': 1}) is None
+    assert sync_deals_by_filter('updated_at', {'id': 5000440502}) is None
     assert len(responses.calls) == 1
 
 
@@ -71,19 +71,11 @@ def test_sync_tasks_by_filter():
 
 
 @responses.activate
-def test_sync_accounts_by_filter():
+def test_owners():
     """
-    Test sync of accounts, inject data via responses
+    Test sync of owners from other deals
     """
-    sales_account_data = json.load(
-        open(os.path.join(pytest.TEST_DIR, 'mock_data/sales_accounts.json')))
-    sales_account_url = 'https://{}.freshsales.io/api/sales_accounts/view/1?per_page=100&sort=updated_at&sort_type=desc&page=1'.format(
-        pytest.TEST_DOMAIN)
-    responses.add(responses.GET, sales_account_url,
-                  json=sales_account_data, status=200, content_type='application/json')
-    assert sync_accounts_by_filter('updated_at', {'id': 1}) is None
-    assert len(responses.calls) == 1
-
+    assert(len(owners)) == 1
 
 def test_tap_discover():
     """

@@ -1,0 +1,47 @@
+{
+    "type": "object",
+    "properties": {
+      "id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "email": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "avatar": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+      "display_name": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+      "work_number": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "mobile_number": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "is_active": {
+          "type": [
+              "null",
+              "boolean"
+          ]
+      }
+    }
+}
