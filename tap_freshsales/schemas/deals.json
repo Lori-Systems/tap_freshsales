@@ -117,8 +117,47 @@
                 "integer"
             ]
         },
-        "custom_field": {
-            "type": ["null","string"]            
+        "custom_field[cf_preferred_communication_style]":  {
+            "type": ["null","string"]         
+        },
+        "custom_field[cf_email]":  {
+            "type": ["null","string"]         
+        },
+        "custom_field[cf_primary_contact]":  {
+            "type": ["null","string"]         
+        },
+        "custom_field[cf_whatsapp]":  {
+            "type": ["null","string"]         
+        },
+        "custom_field[cf_finance_point_of_contact]": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "custom_field[cf_loading_point_of_contact]": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "custom_field[cf_off-loading_point_of_contact]": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "custom_field[cf_managing_director]": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "custom_field[cf_notes]":  {
+            "type": ["null","string"]         
+        },
+        "custom_field[cf_contact_type]":  {
+            "type": ["null","string"]         
         }
     }
 }

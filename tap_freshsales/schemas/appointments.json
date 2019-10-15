@@ -83,15 +83,6 @@
                 "boolean"
             ]
         },
-        "appointment_attendees_attributes": {
-            "type": [
-                "null",
-                "array"
-            ],
-            "items": {
-                "type": ["null", "object"]
-            }
-        },
         "outcome_id": {
             "type": [
                 "null",
