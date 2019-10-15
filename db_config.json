@@ -1,0 +1,16 @@
+{
+    "redshift_username": "username",
+    "redshift_schema": "tap_freshsales",
+    "redshift_host": "your redshift.amazonaws.com",
+    "redshift_password": "password",
+    "redshift_port": 5439,
+    "redshift_database": "your db",
+    "default_column_length": 1000,
+    "target_s3":{
+      "aws_access_key_id": "AKIA...",
+      "aws_secret_access_key": "secrete key",
+      "bucket": "bucket name",
+      "key_prefix": "temp_"
+
+    }
+  }
