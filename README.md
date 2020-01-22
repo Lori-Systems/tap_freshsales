@@ -45,7 +45,7 @@ If successful, state.json should have this format.
   - SCHEMA : Generated schema - automates the `Data insert ` process
   - RECORD : Actual data for each record in json format.
 
-# Running tapo to Postgres Database
+# Running tap to Postgres Database
 - To push data from tap_freshsale to postgres db using the target-postgres
 - Add db_config 
 ```
@@ -61,7 +61,7 @@ If successful, state.json should have this format.
 ```
 - Run this command `python your_virtual_env/bin/tap_freshsales --config ../config.json | your_virtual_env/bin/target-postgres  -c ../db_config.json`
 
-# Running tapo to Redshift Database
+# Running tap to Redshift Database
 - To push data from tap_freshsale to Redshift db using the target-redshift
 - `Pip install target-redshift`
 - Add db_config 
@@ -85,6 +85,8 @@ If successful, state.json should have this format.
 ```
 - Run this command `python your_virtual_env/bin/tap_freshsales --config ../config.json | your_virtual_env/bin/target-redshift  -c ../db_config.json`
 
+Since python2.7 has been deprecated, you might have to 
+- `pip3 install target-redshift` or copy the target-redshift file to `your_env/bin/`
 ---
 
 Copyright &copy; 2018 Lori
