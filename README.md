@@ -88,5 +88,6 @@ If successful, state.json should have this format.
 Since python2.7 has been deprecated, you might have to 
 - `pip3 install target-redshift` or copy the target-redshift file to `your_env/bin/`
 ---
+## Versions:
 
 Copyright &copy; 2018 Lori

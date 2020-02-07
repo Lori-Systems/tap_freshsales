@@ -1,4 +1,4 @@
-atomicwrites==1.3.0
+# atomicwrites==1.3.0
 attrs==17.4.0
 backoff==1.3.2
 backports.functools-lru-cache==1.6.1
@@ -31,7 +31,7 @@ singer-python==5.1.1
 singer-tools==0.4.1
 six==1.12.0
 strict-rfc3339==0.7
--e git+https://github.com/Lori-Systems/tap_freshsales@95826afbb132b7da8d36018d2cbbf7866261f13e#egg=tap_freshsales
+tap_freshsales==0.1.0  
 target-postgres==1.1.3
 terminaltables==3.1.0
 urllib3==1.24.2
