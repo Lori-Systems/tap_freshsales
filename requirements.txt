@@ -31,7 +31,7 @@ singer-python==5.1.1
 singer-tools==0.4.1
 six==1.12.0
 strict-rfc3339==0.7
-tap_freshsales==0.1.0  
+tap_freshsales==0.1.0
 target-postgres==1.1.3
 terminaltables==3.1.0
 urllib3==1.24.2
