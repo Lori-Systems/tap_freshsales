@@ -539,14 +539,14 @@ def sync(config, state, catalog):
             sync_appointments()
         if 'deals' in selected_streams:
             sync_deals()
-        if 'sales_activities' in selected_streams:
-            sync_sales_activities()
+        # if 'sales_activities' in selected_streams:
+        #    sync_sales_activities()
         if 'leads' in selected_streams:
             sync_leads()
         if 'accounts' in selected_streams:
             sync_accounts()
-        if 'tasks' in selected_streams:
-            sync_tasks()
+        # if 'tasks' in selected_streams:
+        #    sync_tasks()
         if 'owners' in selected_streams:
             sync_owners_all()
 
