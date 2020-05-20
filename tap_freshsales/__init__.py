@@ -101,7 +101,11 @@ def gen_request(url, params=None):
             if first_key == 'filters':
                 yield data
             elif first_key == 'meta':
-                break
+                if 'contacts' in data.keys():
+                    for row in data['contacts']:
+                        yield row
+                else:
+                    break  
             else:
                 data_list = data[first_key]
                 if "users" in data.keys():
