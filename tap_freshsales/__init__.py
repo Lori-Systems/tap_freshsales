@@ -307,7 +307,7 @@ def sync_contacts_by_filter(bookmark_prop, fil):
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
     contacts = gen_request(
-        get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
+        get_url(endpoint, query='view/' + str(fil_id) + '?include=owner,sales_account'))
     for con in contacts:
         if con[bookmark_prop] >= start:
             LOGGER.info("Contact {}: Syncing details".format(con['id']))
