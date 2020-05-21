@@ -105,7 +105,13 @@ def gen_request(url, params=None):
                     for row in data['contacts']:
                         yield row
                 else:
-                    break  
+                    break
+            elif first_key == 'sales_accounts':
+                if 'contacts' in data.keys():
+                    for row in data['contacts']:
+                        yield row
+                else:
+                    break
             else:
                 data_list = data[first_key]
                 if "users" in data.keys():
