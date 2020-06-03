@@ -26,6 +26,7 @@ LOGGER = singer.get_logger()
 SESSION = requests.Session()
 
 owners = []
+sales_account = []
 endpoints = {
     "leads": "/api/leads/{query}",
     "contacts": "/api/contacts/{query}",
@@ -83,6 +84,7 @@ def gen_request(url, params=None):
     """
     Generator to yields rows of data for given stream
     """
+    
     params = params or {}
     params["per_page"] = PER_PAGE
     params["sort"] = 'updated_at'
@@ -101,7 +103,17 @@ def gen_request(url, params=None):
             if first_key == 'filters':
                 yield data
             elif first_key == 'meta':
-                break
+                if 'contacts' in data.keys():
+                    for row in data['contacts']:
+                        yield row
+                else:
+                    break
+            elif first_key == 'sales_accounts':
+                if 'contacts' in data.keys():
+                    for row in data['contacts']:
+                        yield row
+                else:
+                    break
             else:
                 data_list = data[first_key]
                 if "users" in data.keys():
@@ -270,6 +282,7 @@ def sync_accounts_by_filter(bookmark_prop, fil):
 
 
 def sync_contacts():
+    # import pdb; pdb.set_trace()
     """
     Sync Sales Accounts Data, Standard schema is kept as columns,
     Custom fields are saved as JSON content
@@ -297,7 +310,7 @@ def sync_contacts_by_filter(bookmark_prop, fil):
     state_entity = endpoint + "_" + str(fil_id)
     start = get_start(state_entity)
     contacts = gen_request(
-        get_url(endpoint, query='view/' + str(fil_id) + '?include=owner'))
+        get_url(endpoint, query='view/' + str(fil_id) + '?include=owner,sales_account'))
     for con in contacts:
         if con[bookmark_prop] >= start:
             LOGGER.info("Contact {}: Syncing details".format(con['id']))
@@ -535,14 +548,14 @@ def sync(config, state, catalog):
             sync_appointments()
         if 'deals' in selected_streams:
             sync_deals()
-        if 'sales_activities' in selected_streams:
-            sync_sales_activities()
+        # if 'sales_activities' in selected_streams:
+        #     sync_sales_activities()
         if 'leads' in selected_streams:
             sync_leads()
         if 'accounts' in selected_streams:
             sync_accounts()
-        if 'tasks' in selected_streams:
-            sync_tasks()
+        # if 'tasks' in selected_streams:
+        #     sync_tasks()
         if 'owners' in selected_streams:
             sync_owners_all()
 
