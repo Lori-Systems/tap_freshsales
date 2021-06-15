@@ -47,7 +47,7 @@
         "status": {
             "type": [
                 "null",
-                "boolean"
+                "string"
             ]
         },
         "creater_id": {
@@ -76,10 +76,22 @@
                 "integer"
             ]
         },
+        "outcome_label": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
         "task_type_id": {
             "type": [
                 "null",
                 "integer"
+            ]
+        },
+        "task_type_label": {
+            "type": [
+                "null",
+                "string"
             ]
         }
     }

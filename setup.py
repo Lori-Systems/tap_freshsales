@@ -10,8 +10,8 @@ setup(
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["tap_freshsales"],
     install_requires=[
-        "singer-python==5.1.1",
-        "requests==2.20.0",
+        "singer-python==5.12.1",
+        "requests==2.25.1",
     ],
     extras_require={
         'dev': [

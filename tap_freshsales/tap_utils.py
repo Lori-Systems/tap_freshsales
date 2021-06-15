@@ -12,6 +12,9 @@ def strptime(dt):
     """
     Parse FreshSales time format
     """
+    if len(dt.split('-')[-1]) == 5:
+        # change from '2021-06-11T08:52:40-04:00' -> '2021-06-11T08:52:40Z'
+        dt = dt[:-6] + "Z"
     return datetime.datetime.strptime(dt, DATETIME_FMT)
 
 
