@@ -16,7 +16,13 @@ class Stream:
 
 
 class Accounts(Stream):
-    stream_id = 'accounts'
+    """
+    The parameter filter is mandatory.
+    Only one filter is allowed at a time.
+    Getting multiple filtered accounts is not possible.
+    Use 'include' to embed additional details in the response.
+    """
+    stream_id = 'sales_accounts'
     stream_name = 'accounts'
     endpoint = 'api/sales_accounts'
     key_properties = ["id"]
@@ -24,27 +30,46 @@ class Accounts(Stream):
     replication_keys = ['updated_at']
 
     def sync(self):
+        """
+            Accounts are filtered from views
+            Same accounts could be in different views
+            ex. My Accounts, All Accounts, "My Territory Accounts, etc
+            All accounts could be retrieved from set(all accounts, recycle bin)
+        """
         stream = self.endpoint
         filters = self.client.get_filters(stream)
+        all_accounts_filters = ['All Accounts', 'Recycle Bin']  # these are default views
         for acc_filter in filters:
-            view_id = acc_filter['id']
-            state_entity = self.stream_name + "_" + str(view_id) + " " + acc_filter['name']
-            start = self.client.get_start(state_entity)
-            LOGGER.info("Syncing stream {} from {}".format(stream, start))
+            # make sure to not have duplicated from different groups of view/ filters
+            if acc_filter['name'] not in all_accounts_filters:
+                continue
 
-            records = self.client.gen_request('GET', stream,
+            view_id = acc_filter['id']
+            start = self.client.get_start(self.stream_name)
+            LOGGER.info("Syncing stream '{}' of view '{}' from {}".format(self.stream_name, acc_filter['name'], start))
+            records = self.client.gen_request('GET', self.stream_id,
                                               self.client.url(stream, query='view/' + str(view_id) +
                                                                             '?include=owner'))
-
+            state_date = start
             for record in records:
+                # sorted by updated at
                 if record['updated_at'] >= start:
-                    LOGGER.info("Account {}: Syncing details".format(record['id']))
-                    tap_utils.update_state(self.client.state, state_entity, record['updated_at'])
+                    state_date = record['updated_at']
                     yield record
+
+            # update stream state with 1 sec for the next data retrieval
+            state_date = tap_utils.strftime(tap_utils.strptime(state_date) + datetime.timedelta(seconds=1))
+            tap_utils.update_state(self.client.state, self.stream_name, state_date)
             singer.write_state(self.client.state)
 
 
 class Appointments(Stream):
+    """
+        The parameter filter is mandatory.
+        Only one filter is allowed at a time.
+        Getting multiple filtered appointments is not possible.
+        Use 'include' to embed additional details in the response.
+    """
     stream_id = 'appointments'
     stream_name = 'appointments'
     endpoint = 'api/appointments?filter={filter}&include={include}'
@@ -63,36 +88,56 @@ class Appointments(Stream):
 
 
 class Contacts(Stream):
+    """
+        The parameter filter is mandatory.
+        Only one filter is allowed at a time.
+        Getting multiple filtered contacts is not possible.
+        Use 'include' to embed additional details in the response.
+    """
     stream_id = 'contacts'
     stream_name = 'contacts'
-    # endpoint = 'api/filtered_search/contact' -> response does not include all fields
+    # endpoint = 'api/filtered_search/contact' (POST with payload)-> response does not include all fields
     endpoint = 'api/contacts'
     key_properties = ["id"]
-    replication_method = "FULL_TABLE"
+    replication_method = "INCREMENTAL"
     replication_keys = ["updated_at"]
 
     def sync(self):
         filters = self.client.get_filters(self.endpoint)
+        # all inclusive filters - skip duplicated contacts
+        all_contacts_filters = ['All Contacts', 'Recycle Bin']
         for contact_filter in filters:
+            if contact_filter['name'] not in all_contacts_filters:
+                continue
+
             view_id = contact_filter['id']
             view_name = contact_filter['name']
-            state_entity = self.stream_name + "_" + str(view_id) + " " + view_name
-            start = self.client.get_start(state_entity)
-            LOGGER.info("Syncing stream {} from {}".format(self.stream_name, start))
+            start = self.client.get_start(self.stream_name)
 
-            records = self.client.gen_request('GET', self.endpoint,
+            LOGGER.info("Syncing stream '{}' of view '{}' from {}".format(self.stream_name, view_name, start))
+            records = self.client.gen_request('GET', self.stream_name,
                                               self.client.url(self.endpoint, query='view/' + str(view_id) +
                                                                                    '?include=owner,sales_account'))
+            state_date = start
             for record in records:
                 if record['updated_at'] >= start:
-                    LOGGER.info("Contact {}: Syncing details".format(record['id']))
-                    tap_utils.update_state(self.client.state, state_entity, record['updated_at'])
+                    state_date = record['updated_at']
                     # return records that fulfill the date condition
                     yield record
+
+            # update stream state with 1 sec for the next data retrieval
+            state_date = tap_utils.strftime(tap_utils.strptime(state_date) + datetime.timedelta(seconds=1))
+            tap_utils.update_state(self.client.state, self.stream_name, state_date)
             singer.write_state(self.client.state)
 
 
 class Deals(Stream):
+    """
+        The parameter filter is mandatory.
+        Only one filter is allowed at a time.
+        Getting multiple filtered deals is not possible.
+        Use 'include' to embed additional details in the response.
+    """
     stream_id = 'deals'
     stream_name = 'deals'
     endpoint = 'api/deals'
@@ -103,15 +148,22 @@ class Deals(Stream):
     def sync(self):
         stream = self.endpoint
         filters = self.client.get_filters(stream)
+        # possibility for duplicated in views:
+        # ['My Deals', 'My Territory Deals', 'Recent Deals', 'Recently Imported', \
+        # 'Hot Deals', 'Cold Deals', 'Closing this week', 'This month's sales']
+        all_deals_filters = ['Open Deals', 'Lost Deals', 'Won Deals', 'Recycle Bin']
         for d_filter in filters:
             view_id = d_filter['id']
-            state_entity = self.stream_name + "_" + str(view_id)
-            start = self.client.get_start(state_entity)
-            LOGGER.info("Syncing stream {} from {}".format(stream, start))
+            view_name = d_filter['name']
+            if view_name not in all_deals_filters:
+                continue
+            start = self.client.get_start(self.stream_name)
+            LOGGER.info("Syncing stream '{}' of view '{}' from {}".format(self.stream_name, view_name, start))
 
-            records = self.client.gen_request('GET', stream,
-                                              self.client.url(stream, query='view/' + str(view_id)
-                                                                            + '?include=owner'))
+            records = self.client.gen_request('GET', self.stream_name,
+                                              self.client.url(self.stream_name, query='view/' + str(view_id)
+                                                                                      + '?include=owner'))
+            state_date = start
             for record in records:
                 if record['updated_at'] >= start:
                     LOGGER.info("Deal {}: Syncing details".format(record['id']))
@@ -120,28 +172,28 @@ class Deals(Stream):
                     record['custom_field'] = json.dumps(
                         record['custom_field'])  # Make JSON String to store
 
-                    tap_utils.update_state(self.client.state, state_entity, record['updated_at'])
-                yield record
+                    state_date = record['updated_at']
+                    yield record
+
+            # update stream state with 1 sec for the next data retrieval
+            state_date = tap_utils.strftime(tap_utils.strptime(state_date) + datetime.timedelta(seconds=1))
+            tap_utils.update_state(self.client.state, self.stream_name, state_date)
             singer.write_state(self.client.state)
 
 
 class Owners(Stream):
     stream_id = 'owners'
     stream_name = 'owners'
-    endpoint = 'api/owners'
+    endpoint = 'api/selector/owners'
     key_properties = ["id"]
-    replication_method = "INCREMENTAL"
-    replication_keys = ['updated_at']
+    replication_method = "FULL_TABLE"
+    replication_keys = []
 
     def sync(self):
-        stream = self.endpoint
-        for record in self.client.owners:
-            state_entity = self.stream_name + "_" + str(record['id'])
-            if state_entity not in self.state:
-                LOGGER.info("Owner {}: Syncing details".format(record['id']))
-                tap_utils.update_state(self.client.state, state_entity, record['id'])
-                yield record
-                singer.write_state(self.client.state)
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
 
 
 class Sales(Stream):
@@ -154,15 +206,19 @@ class Sales(Stream):
 
     def sync(self):
         stream = self.endpoint
-        start = self.client.get_start(stream)
+        start = self.client.get_start(self.stream_name)
         LOGGER.info("Syncing stream {} from {}".format(stream, start))
 
-        records = self.client.gen_request('GET', stream, self.client.url(stream))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(stream))
+        state_date = start
         for record in records:
             if record['updated_at'] >= start:
-                LOGGER.info("Sale activity {}: Syncing details".format(record['id']))
-                tap_utils.update_state(self.client.state, stream, record['updated_at'])
+                state_date = record['updated_at']
                 yield record
+
+        # update stream state with 1 sec for the next data retrieval
+        state_date = tap_utils.strftime(tap_utils.strptime(state_date) + datetime.timedelta(seconds=1))
+        tap_utils.update_state(self.client.state, self.stream_name, state_date)
         singer.write_state(self.client.state)
 
 
@@ -207,8 +263,9 @@ class Tasks(Stream):
         filters = ['open', 'completed']
         for state_filter in filters:
             LOGGER.info("Syncing stream {} {}".format(state_filter, stream))
-            records = self.client.gen_request('GET', stream, self.client.url(stream, filter=state_filter,
-                                                                             include='owner,users,targetable'))
+            records = self.client.gen_request('GET', self.stream_name,
+                                              self.client.url(stream, filter=state_filter,
+                                                              include='owner,users,targetable'))
             for record in records:
                 # update boolean status with label
                 record['status'] = state_filter
@@ -224,9 +281,8 @@ class CustomModule(Stream):
     custom_module = 'settings/module_customizations'
     custom_fields = 'settings/{name}/forms'
     key_properties = ["id"]
-    # TODO: support incremental with possible updated_at field?
-    replication_method = "FULL_TABLE"
-    replication_keys = []
+    replication_method = "INCREMENTAL"
+    replication_keys = ['updated_at']
 
     def get_custom_module_schema(self):
         schema = {}
@@ -262,11 +318,36 @@ class CustomModule(Stream):
 
     def sync(self):
         stream = self.endpoint.format(stream=self.stream_name)
+        start = self.client.get_start(self.stream_name)
+        repl = self.replication_keys
+        data = {
+            "filter_rule": [
+                {
+                    "attribute": repl and repl[0] or False,
+                    "operator": "is_after",
+                    "value": start
+                }
+            ]
+        }
         # GET custom modules
-        records = self.client.gen_request('POST', stream, self.client.url(stream))
+        try:
+            records = self.client.gen_request('POST', stream, self.client.url(stream), payload=data)
+        except Exception as e:
+            # eg. may not have updated_at field. Request with date false in payload will fail
+            LOGGER.error("Exception on custom module sync with message: ", e)
+            return
+
+        start_state = start
         for record in records:
             LOGGER.info("Lead {}: Syncing details".format(record['id']))
-            yield record
+            if record.get('updated_at', False) >= start:
+                start_state = record.get('updated_at', False)
+                yield record
+
+        # update stream state with 1 sec for the next data retrieval
+        start_state = tap_utils.strftime(tap_utils.strptime(start_state) + datetime.timedelta(seconds=1))
+        tap_utils.update_state(self.client.state, self.stream_name, start_state)
+        singer.write_state(self.client.state)
 
 
 STREAM_OBJECTS = {

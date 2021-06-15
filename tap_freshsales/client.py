@@ -220,7 +220,9 @@ class Client(object):
                                 data['users'][0])  # there is only one user per item
                         except:
                             LOGGER.info("item with no owner")
-                        data.pop('users')
+
+                        if stream != 'owners':
+                            data.pop('users')
 
                     if stream in list(data.keys()):
                         first_key = stream
