@@ -173,7 +173,7 @@ class Client(object):
         params = params or {}
         params["per_page"] = PER_PAGE
         params["sort"] = 'updated_at'
-        params["sort_type"] = 'desc'
+        params["sort_type"] = 'asc'
         page = 1
         # Meta tag carries number of pages
         # Use generator to scan across all pages of output

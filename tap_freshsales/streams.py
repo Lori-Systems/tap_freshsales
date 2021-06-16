@@ -45,8 +45,11 @@ class Accounts(Stream):
                 continue
 
             view_id = acc_filter['id']
-            start = self.client.get_start(self.stream_name)
-            LOGGER.info("Syncing stream '{}' of view '{}' from {}".format(self.stream_name, acc_filter['name'], start))
+            view_name = acc_filter['name']
+            grouped_entity = self.stream_name + "_" + str(view_id)
+            start = self.client.get_start(grouped_entity)
+            LOGGER.info("Syncing stream '{}' of view '{}' with ID {} from {}".format(
+                self.stream_name, view_name, view_id, start))
             records = self.client.gen_request('GET', self.stream_id,
                                               self.client.url(stream, query='view/' + str(view_id) +
                                                                             '?include=owner'))
@@ -59,7 +62,7 @@ class Accounts(Stream):
 
             # update stream state with 1 sec for the next data retrieval
             state_date = tap_utils.strftime(tap_utils.strptime(state_date) + datetime.timedelta(seconds=1))
-            tap_utils.update_state(self.client.state, self.stream_name, state_date)
+            tap_utils.update_state(self.client.state, grouped_entity, state_date)
             singer.write_state(self.client.state)
 
 
@@ -112,9 +115,10 @@ class Contacts(Stream):
 
             view_id = contact_filter['id']
             view_name = contact_filter['name']
-            start = self.client.get_start(self.stream_name)
-
-            LOGGER.info("Syncing stream '{}' of view '{}' from {}".format(self.stream_name, view_name, start))
+            grouped_entity = self.stream_name + "_" + str(view_id)
+            start = self.client.get_start(grouped_entity)
+            LOGGER.info("Syncing stream '{}' of view '{}' with ID {} from {}".format(
+                self.stream_name, view_name, view_id, start))
             records = self.client.gen_request('GET', self.stream_name,
                                               self.client.url(self.endpoint, query='view/' + str(view_id) +
                                                                                    '?include=owner,sales_account'))
@@ -127,7 +131,7 @@ class Contacts(Stream):
 
             # update stream state with 1 sec for the next data retrieval
             state_date = tap_utils.strftime(tap_utils.strptime(state_date) + datetime.timedelta(seconds=1))
-            tap_utils.update_state(self.client.state, self.stream_name, state_date)
+            tap_utils.update_state(self.client.state, grouped_entity, state_date)
             singer.write_state(self.client.state)
 
 
@@ -148,7 +152,7 @@ class Deals(Stream):
     def sync(self):
         stream = self.endpoint
         filters = self.client.get_filters(stream)
-        # possibility for duplicated in views:
+        # possibility for duplicates in views:
         # ['My Deals', 'My Territory Deals', 'Recent Deals', 'Recently Imported', \
         # 'Hot Deals', 'Cold Deals', 'Closing this week', 'This month's sales']
         all_deals_filters = ['Open Deals', 'Lost Deals', 'Won Deals', 'Recycle Bin']
@@ -157,16 +161,18 @@ class Deals(Stream):
             view_name = d_filter['name']
             if view_name not in all_deals_filters:
                 continue
-            start = self.client.get_start(self.stream_name)
-            LOGGER.info("Syncing stream '{}' of view '{}' from {}".format(self.stream_name, view_name, start))
 
+            grouped_entity = self.stream_name + "_" + str(view_id)
+            start = self.client.get_start(grouped_entity)
+            LOGGER.info("Syncing stream '{}' of view '{}' with ID {} from {}".format(
+                self.stream_name, view_name, view_id, start))
             records = self.client.gen_request('GET', self.stream_name,
                                               self.client.url(self.stream_name, query='view/' + str(view_id)
                                                                                       + '?include=owner'))
             state_date = start
             for record in records:
                 if record['updated_at'] >= start:
-                    LOGGER.info("Deal {}: Syncing details".format(record['id']))
+                    LOGGER.info("Deal {} - {}: Syncing details".format(record['name'], record['id']))
                     # get all sub-entities and save them
                     record['amount'] = float(record['amount'])  # cast amount to float
                     record['custom_field'] = json.dumps(
@@ -177,7 +183,7 @@ class Deals(Stream):
 
             # update stream state with 1 sec for the next data retrieval
             state_date = tap_utils.strftime(tap_utils.strptime(state_date) + datetime.timedelta(seconds=1))
-            tap_utils.update_state(self.client.state, self.stream_name, state_date)
+            tap_utils.update_state(self.client.state, grouped_entity, state_date)
             singer.write_state(self.client.state)
 
 
@@ -350,7 +356,246 @@ class CustomModule(Stream):
         singer.write_state(self.client.state)
 
 
+class Territories(Stream):
+    stream_id = 'territories'
+    stream_name = 'territories'
+    endpoint = 'api/selector/territories'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class DealStages(Stream):
+    stream_id = 'deal_stages'
+    stream_name = 'deal_stages'
+    endpoint = 'api/selector/deal_stages'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class DealReasons(Stream):
+    stream_id = 'deal_reasons'
+    stream_name = 'deal_reasons'
+    endpoint = 'api/selector/deal_reasons'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class DealTypes(Stream):
+    stream_id = 'deal_types'
+    stream_name = 'deal_types'
+    endpoint = 'api/selector/deal_types'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class IndustryTypes(Stream):
+    stream_id = 'industry_types'
+    stream_name = 'industry_types'
+    endpoint = 'api/selector/industry_types'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class BusinessTypes(Stream):
+    stream_id = 'business_types'
+    stream_name = 'business_types'
+    endpoint = 'api/selector/industry_types'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class Campaigns(Stream):
+    stream_id = 'campaigns'
+    stream_name = 'campaigns'
+    endpoint = 'api/selector/campaigns'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class DealPaymentStatuses(Stream):
+    stream_id = 'deal_payment_statuses'
+    stream_name = 'deal_payment_statuses'
+    endpoint = 'api/selector/deal_payment_statuses'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class DealProducts(Stream):
+    stream_id = 'deal_products'
+    stream_name = 'deal_products'
+    endpoint = 'api/selector/deal_products'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class DealPipelines(Stream):
+    stream_id = 'deal_pipelines'
+    stream_name = 'deal_pipelines'
+    endpoint = 'api/selector/deal_pipelines'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+class DealStages(Stream):
+    stream_id = 'deal_stages'
+    stream_name = 'deal_stages'
+    endpoint = 'api/selector/deal_stages'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class ConstactStatuses(Stream):
+    stream_id = 'contact_statuses'
+    stream_name = 'contact_statuses'
+    endpoint = 'api/selector/contact_statuses'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+class SalesActivityTypes(Stream):
+    stream_id = 'sales_activity_types'
+    stream_name = 'sales_activity_types'
+    endpoint = 'api/selector/sales_activity_types'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class SalesActivityOutcomes(Stream):
+    stream_id = 'sales_activity_outcomes'
+    stream_name = 'sales_activity_outcomes'
+    endpoint = 'api/selector/sales_activity_outcomes'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class SalesActivityEntityTypes(Stream):
+    stream_id = 'sales_activity_entity_types'
+    stream_name = 'sales_activity_entity_types'
+    endpoint = 'api/selector/sales_activity_entity_types'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
+class LifecycleStages(Stream):
+    stream_id = 'lifecycle_stages'
+    stream_name = 'lifecycle_stages'
+    endpoint = 'api/selector/lifecycle_stages'
+    key_properties = ["id"]
+    replication_method = "FULL_TABLE"
+    replication_keys = []
+
+    def sync(self):
+        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
+        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
+        for record in records:
+            yield record
+
+
 STREAM_OBJECTS = {
+    # Main entities
     'accounts': Accounts,
     'appointments': Appointments,
     'contacts': Contacts,
@@ -358,5 +603,25 @@ STREAM_OBJECTS = {
     'owners': Owners,
     'sales_activities': Sales,
     'tasks': Tasks,
-    'custom_module': CustomModule
+
+    # custom module support
+    'custom_module': CustomModule,
+
+    # configuration support
+    'territories': Territories,
+    'deal_stages': DealStages,
+    'deal_reasons': DealReasons,
+    'deal_types': DealTypes,
+    'industry_types': IndustryTypes,
+    'business_types': BusinessTypes,
+    'campaigns': Campaigns,
+    'deal_payment_statuses': DealPaymentStatuses,
+    'deal_products': DealProducts,
+    'deal_pipelines': DealPipelines,
+    'contact_statuses': ConstactStatuses,
+    # TODO: remove from inline entity call activity type & outcome
+    'sales_activity_types': SalesActivityTypes,
+    'sales_activity_outcomes': SalesActivityOutcomes,
+    'sales_activity_entity_types': SalesActivityEntityTypes,
+    'lifecycle_stages': LifecycleStages
 }
