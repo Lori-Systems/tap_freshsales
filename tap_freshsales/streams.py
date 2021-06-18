@@ -56,7 +56,8 @@ class Accounts(Stream):
             state_date = start
             for record in records:
                 # sorted by updated at
-                if record['updated_at'] >= start:
+                record_date = tap_utils.strftime(tap_utils.strptime(record['updated_at']))
+                if record_date >= start:
                     state_date = record['updated_at']
                     yield record
 
@@ -124,7 +125,8 @@ class Contacts(Stream):
                                                                                    '?include=owner,sales_account'))
             state_date = start
             for record in records:
-                if record['updated_at'] >= start:
+                record_date = tap_utils.strftime(tap_utils.strptime(record['updated_at']))
+                if record_date >= start:
                     state_date = record['updated_at']
                     # return records that fulfill the date condition
                     yield record
@@ -171,7 +173,9 @@ class Deals(Stream):
                                                                                       + '?include=owner'))
             state_date = start
             for record in records:
-                if record['updated_at'] >= start:
+                # convert record date in UTC to make the comparison with state's date
+                record_date = tap_utils.strftime(tap_utils.strptime(record['updated_at']))
+                if record_date >= start:
                     LOGGER.info("Deal {} - {}: Syncing details".format(record['name'], record['id']))
                     # get all sub-entities and save them
                     record['amount'] = float(record['amount'])  # cast amount to float
@@ -218,7 +222,8 @@ class Sales(Stream):
         records = self.client.gen_request('GET', self.stream_name, self.client.url(stream))
         state_date = start
         for record in records:
-            if record['updated_at'] >= start:
+            record_date = tap_utils.strftime(tap_utils.strptime(record['updated_at']))
+            if record_date >= start:
                 state_date = record['updated_at']
                 yield record
 
@@ -346,8 +351,12 @@ class CustomModule(Stream):
         start_state = start
         for record in records:
             LOGGER.info("Lead {}: Syncing details".format(record['id']))
-            if record.get('updated_at', False) >= start:
-                start_state = record.get('updated_at', False)
+            if record.get('updated_at', False):
+                record_date = tap_utils.strftime(tap_utils.strptime(record['updated_at']))
+                if record_date >= start:
+                    start_state = record.get('updated_at', False)
+                    yield record
+            else:
                 yield record
 
         # update stream state with 1 sec for the next data retrieval
@@ -434,7 +443,7 @@ class IndustryTypes(Stream):
 class BusinessTypes(Stream):
     stream_id = 'business_types'
     stream_name = 'business_types'
-    endpoint = 'api/selector/industry_types'
+    endpoint = 'api/selector/business_types'
     key_properties = ["id"]
     replication_method = "FULL_TABLE"
     replication_keys = []
@@ -505,20 +514,6 @@ class DealPipelines(Stream):
         for record in records:
             yield record
 
-class DealStages(Stream):
-    stream_id = 'deal_stages'
-    stream_name = 'deal_stages'
-    endpoint = 'api/selector/deal_stages'
-    key_properties = ["id"]
-    replication_method = "FULL_TABLE"
-    replication_keys = []
-
-    def sync(self):
-        LOGGER.info("Syncing stream '{}'".format(self.stream_name))
-        records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
-        for record in records:
-            yield record
-
 
 class ConstactStatuses(Stream):
     stream_id = 'contact_statuses'
@@ -533,6 +528,7 @@ class ConstactStatuses(Stream):
         records = self.client.gen_request('GET', self.stream_name, self.client.url(self.endpoint))
         for record in records:
             yield record
+
 
 class SalesActivityTypes(Stream):
     stream_id = 'sales_activity_types'
