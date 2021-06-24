@@ -4,7 +4,6 @@ import functools
 import json
 import os
 import time
-# import pendulum
 DATETIME_FMT = "%Y-%m-%dT%H:%M:%SZ"
 import singer
 
@@ -13,13 +12,7 @@ def strptime(dt):
     """
     Parse FreshSales time format
     """
-    try:
-        if len(dt.split('-')[-1]) == 5 or len(dt.split('+')[-1]) == 5:
-            # change from '2021-06-11T08:52:40 -/+TimeZone' -> '2021-06-11T08:52:40Z' (UTC)
-            return singer.utils.strptime_to_utc(dt)
-    except Exception:
-        pass
-    return datetime.datetime.strptime(dt, DATETIME_FMT)
+    return singer.utils.strptime_to_utc(dt)
 
 
 def strftime(dt):

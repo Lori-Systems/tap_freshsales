@@ -57,6 +57,10 @@ def do_discover(client):
         # create and add catalog entry
         stream = STREAM_OBJECTS[stream_name]
 
+        # leads endpoint is not listed anymore in official API documentation of the new version
+        if stream_name == 'leads' and client.version == 'new':
+            continue
+
         # add support for custom modules
         if stream_name == 'custom_module':
             # pass necessary params of stream init

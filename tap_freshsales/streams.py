@@ -137,6 +137,60 @@ class Contacts(Stream):
             singer.write_state(self.client.state)
 
 
+class Leads(Stream):
+    """
+        The parameter filter is mandatory.
+        Only one filter is allowed at a time.
+        Getting multiple filtered deals is not possible.
+        Use 'include' to embed additional details in the response.
+    """
+    stream_id = 'leads'
+    stream_name = 'leads'
+    endpoint = 'api/leads'
+    key_properties = ["id"]
+    replication_method = "INCREMENTAL"
+    replication_keys = ['updated_at']
+
+    def sync(self):
+        stream = self.endpoint
+        filters = self.client.get_filters(stream)
+        # possibility for duplicates in views:
+        # ['My Leads', 'New Leads', 'Unassigned Leads', 'All Leads', 'Recently Modified', \
+        # 'My Territory Leads', 'Never Contacted', 'Hot Leads', 'Warm Leads', '"Cold Leads"']
+        all_leads_filters = ['All Leads']
+        for lead_filter in filters:
+            view_id = lead_filter['id']
+            view_name = lead_filter['name']
+            if view_name not in all_leads_filters:
+                continue
+
+            grouped_entity = self.stream_name + "_" + str(view_id)
+            start = self.client.get_start(grouped_entity)
+            LOGGER.info("Syncing stream '{}' of view '{}' with ID {} from {}".format(
+                self.stream_name, view_name, view_id, start))
+            records = self.client.gen_request('GET', self.stream_name,
+                                              self.client.url(self.stream_name, query='view/' + str(view_id)
+                                                                                      + '?include=owner'))
+            state_date = start
+            for record in records:
+                # convert record date in UTC to make the comparison with state's date
+                record_date = tap_utils.strftime(tap_utils.strptime(record['updated_at']))
+                if record_date >= start:
+                    LOGGER.info("Deal {} - {}: Syncing details".format(record['name'], record['id']))
+                    # get all sub-entities and save them
+                    record['amount'] = float(record['amount'])  # cast amount to float
+                    record['custom_field'] = json.dumps(
+                        record['custom_field'])  # Make JSON String to store
+
+                    state_date = record['updated_at']
+                    yield record
+
+            # update stream state with 1 sec for the next data retrieval
+            state_date = tap_utils.strftime(tap_utils.strptime(state_date) + datetime.timedelta(seconds=1))
+            tap_utils.update_state(self.client.state, grouped_entity, state_date)
+            singer.write_state(self.client.state)
+
+
 class Deals(Stream):
     """
         The parameter filter is mandatory.
@@ -595,6 +649,7 @@ STREAM_OBJECTS = {
     'accounts': Accounts,
     'appointments': Appointments,
     'contacts': Contacts,
+    'leads': Leads,  #  Leads only work with old version of freshsales
     'deals': Deals,
     'owners': Owners,
     'sales_activities': Sales,

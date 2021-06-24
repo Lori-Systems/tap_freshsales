@@ -23,6 +23,10 @@ def do_sync(client, config: dict, state: dict, catalog: singer.Catalog):
         stream_id = stream.tap_stream_id
         stream_schema = stream.schema
 
+        # double check, even though leads are removed from catalog from discovery
+        if stream_id == 'leads' and client.version == 'new':
+            continue
+
         # add dynamic custom module to stream objects
         if not STREAM_OBJECTS.get(stream_id):
             STREAM_OBJECTS[stream_id] = tap_freshsales.streams.CustomModule

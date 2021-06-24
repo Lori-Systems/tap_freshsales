@@ -1,0 +1,277 @@
+{
+    "type": "object",
+    "properties": {
+      "id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "first_name": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "last_name": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "job_title": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "department": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "email": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "work_number": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "mobile_number": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "address": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "city": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "state": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "zipcode": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "country": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "lead_stage_id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "lead_reason_id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "lead_source_id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "owner_id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "has_authority": {
+          "type": [
+              "null",
+              "boolean"
+          ]
+      },
+      "do_not_disturb": {
+          "type": [
+              "null",
+              "boolean"
+          ]
+      },
+      "medium": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "campaign_id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "keyword": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "time_zone": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "facebook": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "twitter": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "linkedin": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "territory_id": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "company[name]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "company[address]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "company[city]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "company[state]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "company[zipcode]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "company[country]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "company[industry_type_id]": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "company[business_type_id]": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "company[number_of_employees]": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "company[annual_revenue]": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "company[website]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "company[phone]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "deal[name]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "deal[amount]": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "deal[expected_close]": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "deal[deal_product_id]": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "created_at": {
+          "type": [
+              "null",
+              "string"
+          ],
+          "format": "date-time"
+      },
+      "updated_at": {
+          "type": [
+              "null",
+              "string"
+          ],
+          "format": "date-time"
+      }
+  }
+}

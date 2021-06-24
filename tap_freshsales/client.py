@@ -7,7 +7,7 @@ from tap_freshsales import tap_utils
 
 LOGGER = singer.get_logger()
 
-BASE_URL = "https://{}.myfreshworks.com/crm/sales/"
+BASE_URL = "https://{}"
 PER_PAGE = 100
 
 
@@ -90,6 +90,8 @@ class Client(object):
         self.state = {}
         self.session = requests.Session()
         self.base_url = BASE_URL
+        self.version = 'old'  # options: [ old | new ]
+        # for new version of API, skip leads endpoint as it is removed
         self.owners = []
 
     def prepare_and_send(self, request):
@@ -150,8 +152,7 @@ class Client(object):
             time.sleep(retry_after)
             return self.request(method, url, params, payload)
 
-        resp.raise_for_status()
-
+        self.raise_for_error(resp)
         return resp
 
     # TODO: rewrite in more understandable way
