@@ -1,6 +1,6 @@
 former_version = "{}.freshsales.io"
 latest_version = "{}.myfreshworks.com"
-NEW_VERSION_EXTENSION = '/crm/sales/'
+NEW_VERSION_EXTENSION = 'crm/sales/'
 
 
 def check_version(self):

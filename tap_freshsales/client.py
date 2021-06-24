@@ -7,7 +7,7 @@ from tap_freshsales import tap_utils
 
 LOGGER = singer.get_logger()
 
-BASE_URL = "https://{}"
+BASE_URL = "https://{}/"
 PER_PAGE = 100
 
 
