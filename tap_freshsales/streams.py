@@ -176,9 +176,10 @@ class Leads(Stream):
                 # convert record date in UTC to make the comparison with state's date
                 record_date = tap_utils.strftime(tap_utils.strptime(record['updated_at']))
                 if record_date >= start:
-                    LOGGER.info("Deal {} - {}: Syncing details".format(record['name'], record['id']))
-                    # get all sub-entities and save them
-                    record['amount'] = float(record['amount'])  # cast amount to float
+                    record_id = record.get('id', False)
+                    record_name = record.get('display_name', False) or record_id
+                    LOGGER.info("Lead {} - {}: Syncing details".format(record_name, record_id))
+
                     record['custom_field'] = json.dumps(
                         record['custom_field'])  # Make JSON String to store
 
@@ -230,7 +231,10 @@ class Deals(Stream):
                 # convert record date in UTC to make the comparison with state's date
                 record_date = tap_utils.strftime(tap_utils.strptime(record['updated_at']))
                 if record_date >= start:
-                    LOGGER.info("Deal {} - {}: Syncing details".format(record['name'], record['id']))
+                    record_id = record.get('id', False)
+                    record_name = record.get('name', False) or record_id
+                    LOGGER.info("Deal {} - {}: Syncing details".format(record_name, record_id))
+
                     # get all sub-entities and save them
                     record['amount'] = float(record['amount'])  # cast amount to float
                     record['custom_field'] = json.dumps(

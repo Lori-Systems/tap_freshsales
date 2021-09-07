@@ -7,6 +7,12 @@
               "integer"
           ]
       },
+      "display_name": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
       "first_name": {
           "type": [
               "null",
@@ -95,6 +101,12 @@
           "type": [
               "null",
               "integer"
+          ]
+      },
+      "lead_score": {
+          "type": [
+              "null",
+              "string"
           ]
       },
       "owner_id": {
